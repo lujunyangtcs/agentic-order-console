@@ -1,31 +1,42 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Check, Compass, LogOut, Search, User } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { Bell, Check, Compass, LogOut, Menu, Search, User } from 'lucide-react'
+import { Link, useNavigate } from 'react-router'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ALL_ROLES, ROLE_PURPOSE } from '../permissions'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import { PRODUCT, TENANT, CONNECTOR_PROFILE } from '../product'
+import { ALL_ROLES } from '../permissions'
+import { PRODUCT } from '../product'
 import { useAuth } from '../auth'
 import { useTour } from '../tour/TourProvider'
+import { homeFor, navFor } from '../nav'
+import { NavList } from './Sidebar'
+import { LangToggle } from './LangToggle'
 import { api } from '@/services'
 import { formatDateTime } from '@/fixtures/calendar'
+import { kindKey, roleNameKey, rolePurposeKey, useLang } from '@/i18n'
+import { STAKEHOLDER_KINDS, type Role } from '@/types/domain'
+import { cn } from '@/lib/utils'
 
 export function Topbar() {
-  const { session, signOut, setRole } = useAuth()
+  const { session, signOut, setRole, setStakeholderKind } = useAuth()
   const { start: startTour } = useTour()
+  const { t, lang } = useLang()
   const navigate = useNavigate()
-  /* Same query key as the rail and the Command Center. Three surfaces, one
-   * fetch, and no way for the timestamp here to disagree with the figures
-   * underneath it. */
-  const { data } = useQuery({ queryKey: ['command-center'], queryFn: () => api.dashboard.summary() })
+  const { data } = useQuery({ queryKey: ['summary'], queryFn: () => api.orders.summary() })
+  const scope = session?.role === 'Carrier' ? session.carrierId : session?.role === 'Customer' ? session.customerId : ''
+  const unread = useQuery({
+    queryKey: ['unread', session?.role, scope],
+    queryFn: () => api.notifications.unreadCount(session!.role, scope),
+    enabled: !!session,
+  })
   const [q, setQ] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
   const input = useRef<HTMLInputElement>(null)
 
-  /* The shortcut hint is only honest if the shortcut works. */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
@@ -40,31 +51,47 @@ export function Topbar() {
 
   if (!session) return null
 
+  const searchTarget = session.role === 'CVC User' || session.role === 'Administrator' ? '/worklist' : '/history'
+
+  function chooseRole(role: Role) {
+    setRole(role)
+    navigate(homeFor(role, session!.stakeholderKind))
+  }
+
   return (
-    <header className="border-border bg-surface flex h-14 shrink-0 items-center gap-4 border-b px-4">
-      <div className="flex shrink-0 items-center gap-2">
-        {/* Tenant first, product second. The planner is looking at their own
-            data; whose software renders it is the smaller fact. */}
-        <span className="text-foreground text-sm font-medium">{session.tenantName}</span>
-        <span className="border-tenant-accent/30 bg-tenant-accent-tint text-tenant-accent-text hidden rounded-xs border px-2 py-0.5 text-2xs font-medium lg:inline">
+    <header className="border-border bg-surface flex h-14 shrink-0 items-center gap-3 border-b px-3 md:px-4">
+      {/* Phone and tablet: the rail lives in a drawer. */}
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label={t('chrome.menu')}>
+            <Menu className="size-5" aria-hidden />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="bg-rail text-rail-foreground w-72 p-0 sm:max-w-72">
+          <SheetTitle className="sr-only">{t('chrome.menu')}</SheetTitle>
+          <div className="border-rail-border text-rail-active flex h-14 items-center border-b px-4 text-sm font-semibold">
+            {t('app.short')}
+          </div>
+          <NavList groups={navFor(session.role)} onNavigate={() => setMenuOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
+      <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
+        <span className="text-foreground hidden text-sm font-medium md:inline">{session.tenantName}</span>
+        <span className="border-accent/30 bg-muted text-accent-text hidden rounded-xs border px-2 py-0.5 text-2xs font-medium lg:inline">
           {PRODUCT.chip}
         </span>
-        {/* §10.2 — the disclosure sits in the tenant area of every page, and it
-            is restrained on purpose. A banner would read as a disclaimer; this
-            reads as a fact about the account. */}
-        <span className="text-muted-foreground hidden text-2xs xl:inline">{TENANT.dataNotice}</span>
+        <span className="text-muted-foreground hidden text-2xs 2xl:inline">{t('app.dataNotice')}</span>
       </div>
 
       <form
-        className="mx-auto w-full max-w-md"
+        className="mx-auto hidden w-full max-w-md md:block"
         onSubmit={(e) => {
           e.preventDefault()
-          navigate(q.trim() ? `/inventory?q=${encodeURIComponent(q.trim())}` : '/inventory')
+          navigate(q.trim() ? `${searchTarget}?q=${encodeURIComponent(q.trim())}` : searchTarget)
         }}
       >
-        <label htmlFor="global-search" className="sr-only">
-          Search parts, orders and suppliers
-        </label>
+        <label htmlFor="global-search" className="sr-only">{t('chrome.searchHint')}</label>
         <div className="border-border bg-background focus-within:border-accent/50 focus-within:ring-ring/30 flex h-8 items-center gap-2 rounded-md border px-2.5 transition-colors duration-150 focus-within:ring-[3px]">
           <Search className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
           <input
@@ -72,104 +99,97 @@ export function Topbar() {
             ref={input}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search parts, orders, suppliers"
+            placeholder={t('chrome.search')}
             className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-xs outline-none"
           />
-          <kbd className="border-border text-muted-foreground hidden shrink-0 rounded-xs border px-1 py-0.5 font-mono text-2xs sm:inline">
-            ⌘K
-          </kbd>
+          <kbd className="border-border text-muted-foreground hidden shrink-0 rounded-xs border px-1 py-0.5 font-mono text-2xs sm:inline">⌘K</kbd>
         </div>
       </form>
 
-      {/* Source health and freshness, before the user menu.
-          §6.3 requires a data-as-of stamp on every data-dependent page, and
-          §16.3 keeps connection state and freshness as separate facts — a
-          connector can be reachable and still be serving something stale.
-          The ERP name is read from the connector profile, never hardcoded
-          (FR-038): which system it is remains an open assumption. */}
-      <div className="hidden shrink-0 items-center gap-3 md:flex">
-        <span
-          className="flex items-center gap-1.5 text-2xs"
-          title={`${CONNECTOR_PROFILE.displayName}${CONNECTOR_PROFILE.confirmed ? '' : ' — example connector, confirm at discovery'}`}
-        >
-          <span className="bg-verdict-pass size-1.5 rounded-full" aria-hidden />
-          <span className="text-muted-foreground">
-            {CONNECTOR_PROFILE.shortName}
-            {CONNECTOR_PROFILE.confirmed ? '' : ' (example)'}
-          </span>
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        <span className="text-muted-foreground hidden text-2xs tabular xl:inline">
+          {t('chrome.dataAsOf')} {data ? formatDateTime(data.dataAsOf, lang) : '—'}
         </span>
-        <span className="text-muted-foreground text-2xs tabular">
-          Data as of {data ? formatDateTime(data.dataAsOf) : '—'}
-        </span>
-      </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="shrink-0 gap-2">
-            <User className="size-4" aria-hidden />
-            {/* The name goes before the role does.
-             *
-             * At the 1280 functional minimum the header wanted 1101px in a
-             * 1040px track and clipped the user menu off the right edge —
-             * invisible to the page-overflow assertion, because the header
-             * clips its own content and the body never scrolls.
-             *
-             * Of the two things this button shows, the role is the load-bearing
-             * one: every permission refusal names it and the walk switches it.
-             * The name is decorative here and still in the menu below. */}
-            <span className="hidden text-sm 2xl:inline">{session.name}</span>
-            {/* The acting role is on the bar, not buried in the menu. Every
-                refusal names a role, and a user who cannot see which one they
-                are has to open a menu to understand the refusal. */}
-            <span className="border-border text-muted-foreground rounded-xs border px-1.5 py-0.5 text-2xs font-medium">
-              {session.role}
-            </span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel className="font-normal">
-            <div className="text-sm font-medium">{session.name}</div>
-            <div className="text-muted-foreground text-xs">{session.email}</div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {/* §5.1's role list, switchable. The walk needs it (§20 step 5 signs
-              off a substitute as Engineering Approver), and a permission model
-              that cannot be crossed cannot be demonstrated. */}
-          <DropdownMenuLabel className="text-muted-foreground text-2xs font-normal">
-            Acting as
-          </DropdownMenuLabel>
-          {ALL_ROLES.map((r) => (
-            <DropdownMenuItem
-              key={r}
-              onSelect={() => setRole(r)}
-              data-role-option={r}
-              className="gap-2"
-            >
-              <Check className={r === session.role ? 'size-3.5' : 'size-3.5 opacity-0'} aria-hidden />
-              <span className="flex min-w-0 flex-col">
-                <span className="text-xs">{r}</span>
-                <span className="text-muted-foreground text-2xs">{ROLE_PURPOSE[r]}</span>
+        <LangToggle />
+
+        <Button asChild variant="ghost" size="icon" className="relative" aria-label={t('chrome.notifications')}>
+          <Link to="/notifications" data-bell>
+            <Bell className="size-4" aria-hidden />
+            {unread.data ? (
+              <span className="bg-sev-critical text-primary-foreground absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-medium tabular">
+                {unread.data}
               </span>
+            ) : null}
+          </Link>
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="shrink-0 gap-2" data-role-menu>
+              <User className="size-4" aria-hidden />
+              <span className="hidden text-sm 2xl:inline">{session.name}</span>
+              <span className="border-border text-muted-foreground rounded-xs border px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap">
+                {t(roleNameKey(session.role))}
+                {session.role === 'Other Stakeholder' ? ` · ${t(kindKey(session.stakeholderKind))}` : ''}
+              </span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuLabel className="font-normal">
+              <div className="text-sm font-medium">{session.name}</div>
+              <div className="text-muted-foreground text-xs">{session.email}</div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground text-2xs font-normal">{t('chrome.actingAs')}</DropdownMenuLabel>
+            {ALL_ROLES.map((r) => (
+              <DropdownMenuItem key={r} onSelect={() => chooseRole(r)} data-role-option={r} className="gap-2">
+                <Check className={cn('size-3.5', r !== session.role && 'opacity-0')} aria-hidden />
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-xs">{t(roleNameKey(r))}</span>
+                  <span className="text-muted-foreground text-2xs">{t(rolePurposeKey(r))}</span>
+                </span>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground text-2xs font-normal">
+              {t(roleNameKey('Other Stakeholder'))}
+            </DropdownMenuLabel>
+            {STAKEHOLDER_KINDS.map((k) => (
+              <DropdownMenuItem
+                key={k}
+                data-kind-option={k}
+                onSelect={() => {
+                  setStakeholderKind(k)
+                  navigate(homeFor('Other Stakeholder', k))
+                }}
+                className="gap-2"
+              >
+                <Check
+                  className={cn('size-3.5', !(session.role === 'Other Stakeholder' && session.stakeholderKind === k) && 'opacity-0')}
+                  aria-hidden
+                />
+                <span className="text-xs">{t(kindKey(k))}</span>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => startTour()}>
+              <Compass className="size-4" aria-hidden />
+              {t('chrome.tour')}
             </DropdownMenuItem>
-          ))}
-          <DropdownMenuSeparator />
-          {/* Always available, so declining the invitation is not permanent. */}
-          <DropdownMenuItem onSelect={() => startTour()}>
-            <Compass className="size-4" aria-hidden />
-            Show me round
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onSelect={() => {
-              signOut()
-              navigate('/login')
-            }}
-          >
-            <LogOut className="size-4" aria-hidden />
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                signOut()
+                navigate('/login')
+              }}
+            >
+              <LogOut className="size-4" aria-hidden />
+              {t('chrome.signOut')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   )
 }

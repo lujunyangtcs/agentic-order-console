@@ -34,7 +34,7 @@
  */
 
 /** §8.2. The day the fixture's literals were written against. */
-export const ANCHOR = '2026-08-26'
+export const ANCHOR = '2026-09-04'
 
 const DAY_MS = 86_400_000
 
@@ -85,19 +85,34 @@ export function daysFromToday(iso: string): number {
  * audit column a defect, and it is right: a timestamp without a year is a
  * timestamp you cannot check.
  */
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const MONTHS = {
+  en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  fr: ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'],
+} as const
 
-export function formatDate(iso: string): string {
+export type DateLang = 'en' | 'fr'
+
+export function formatDate(iso: string, lang: DateLang = 'en'): string {
   const t = Date.parse(iso.length === 10 ? `${iso}T00:00:00Z` : iso)
   const dt = new Date(t)
-  return `${String(dt.getUTCDate()).padStart(2, '0')} ${MONTHS[dt.getUTCMonth()]} ${dt.getUTCFullYear()}`
+  return `${String(dt.getUTCDate()).padStart(2, '0')} ${MONTHS[lang][dt.getUTCMonth()]} ${dt.getUTCFullYear()}`
 }
 
-export function formatDateTime(iso: string): string {
+/** `HH:MM` in UTC — the demo clock is UTC throughout so timestamps never
+ *  shift between the presenter's laptop and the projector. */
+export function formatTime(iso: string): string {
   const dt = new Date(Date.parse(iso))
-  const hh = String(dt.getUTCHours()).padStart(2, '0')
-  const mm = String(dt.getUTCMinutes()).padStart(2, '0')
-  return `${formatDate(iso)} ${hh}:${mm}`
+  return `${String(dt.getUTCHours()).padStart(2, '0')}:${String(dt.getUTCMinutes()).padStart(2, '0')}`
+}
+
+export function formatDateTime(iso: string, lang: DateLang = 'en'): string {
+  return `${formatDate(iso, lang)} ${formatTime(iso)}`
+}
+
+/** The wall clock, as an ISO timestamp. The only place `new Date()` is read
+ *  for a mutation stamp; the mock clamps it after the last authored event. */
+export function nowIso(): string {
+  return new Date().toISOString()
 }
 
 /** "3 days ago", "in 2 weeks". For activity rails and evidence ages. */

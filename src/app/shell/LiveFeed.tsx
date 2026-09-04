@@ -5,6 +5,7 @@ import { api } from '@/services'
 import type { ActivityItem } from '@/services'
 import { cn } from '@/lib/utils'
 import { relativeAge } from '@/lib/format'
+import { useT } from '@/i18n'
 
 const GLYPH = {
   attention: AlertTriangle,
@@ -27,6 +28,7 @@ const TONE = {
  * stops moving entirely and becomes a scrollable row.
  */
 export function LiveFeed() {
+  const t = useT()
   const { data } = useQuery({
     queryKey: ['activity'],
     queryFn: () => api.activity.recent(12),
@@ -39,10 +41,10 @@ export function LiveFeed() {
   const seconds = Math.max(30, data.length * 6)
 
   return (
-    <div data-print-hide className="border-border bg-surface flex h-9 shrink-0 items-center gap-3 overflow-hidden border-b pl-4">
+    <div data-print-hide className="border-border bg-surface hidden h-9 shrink-0 items-center gap-3 overflow-hidden border-b pl-4 md:flex">
       <span className="text-muted-foreground flex shrink-0 items-center gap-1.5 eyebrow">
         <Activity className="text-accent-text size-3.5" aria-hidden />
-        Recent activity
+        {t('chrome.recentActivity')}
       </span>
       <div className="border-border h-4 border-l" aria-hidden />
 

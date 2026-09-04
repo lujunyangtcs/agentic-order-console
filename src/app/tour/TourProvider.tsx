@@ -4,7 +4,7 @@ import {
 import { useLocation, useNavigate } from 'react-router'
 import { TOUR_STEPS, type TourStep } from './steps'
 
-const KEY = 'abc.tour.v1'
+const KEY = 'aoc.tour.v1'
 
 type Status = 'unseen' | 'running' | 'skipped' | 'done'
 

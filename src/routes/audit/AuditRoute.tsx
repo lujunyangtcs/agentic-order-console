@@ -5,6 +5,7 @@ import { DataTable, type ColumnDef } from '@/components/table/DataTable'
 import { PageHeader } from '@/components/shell/PageHeader'
 import { LoadingRows } from '@/components/state/States'
 import { formatDateTime } from '@/fixtures/calendar'
+import { useLang } from '@/i18n'
 
 /**
  * What was decided, by whom, and against what.
@@ -20,7 +21,7 @@ const columns: ColumnDef<AuditEntry>[] = [
   {
     key: 'at', header: 'When', width: '180px', pinned: 'left',
     sortValue: (r) => r.at,
-    render: (r) => <span className="tabular text-xs">{formatDateTime(r.at)}</span>,
+    render: (r) => <span className="tabular text-xs">{formatDateTime(r.at, 'en')}</span>,
   },
   {
     key: 'actor', header: 'User or system', width: '170px',
@@ -57,17 +58,18 @@ const columns: ColumnDef<AuditEntry>[] = [
 ]
 
 export function AuditRoute() {
-  const audit = useQuery({ queryKey: ['audit'], queryFn: () => api.replenishment.audit() })
+  const { t } = useLang()
+  const audit = useQuery({ queryKey: ['audit'], queryFn: () => api.reports.audit() })
 
   return (
-    <div className="mx-auto flex max-w-[1600px] flex-col gap-5 px-6 py-6">
+    <div className="mx-auto flex max-w-[1600px] flex-col gap-5 px-4 py-5 md:px-6 md:py-6">
       <PageHeader
-        title="Audit Log"
-        description="Every recommendation, edit, approval and write-back, with what it was based on."
+        title={t('page.audit.title')}
+        description={t('page.audit.desc')}
         stats={[
-          { label: 'Entries', value: String(audit.data?.length ?? '—') },
+          { label: t('common.entries'), value: String(audit.data?.length ?? '—') },
           {
-            label: 'Written back',
+            label: 'With external reference',
             value: String(audit.data?.filter((a) => a.externalReference).length ?? '—'),
           },
         ]}
@@ -80,7 +82,7 @@ export function AuditRoute() {
           rows={audit.data ?? []}
           columns={columns}
           rowKey={(r) => r.id}
-          empty="Nothing has been decided yet."
+          empty={t('common.empty')}
         />
       )}
     </div>

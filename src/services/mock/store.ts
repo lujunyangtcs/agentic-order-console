@@ -1,57 +1,114 @@
+import type {
+  CarrierRequest, Deviation, Notification, NotificationRule, PodDocument, Priority,
+  SecurityConfig, StatusEvent, Ticket, User,
+} from '@/types/domain'
+import type { ReportSpec } from '../contracts'
+
 /**
  * The mutable demo store.
  *
- * Everything the demo changes — an approved substitute, an edited requisition
- * line, a write-back — lands here and survives a reload, so a presenter who
- * refreshes mid-walk does not lose the state they just built.
+ * Everything the demo changes — a request sent, a status tapped, a signature
+ * captured, a rule saved — lands here and survives a reload, so a presenter
+ * who refreshes mid-walk keeps the state they just built.
  *
  * ## The storage key carries the seed version, deliberately
  *
- * The usual arrangement is a fixed key plus a version field that the loader
- * checks. That fails in a specific and expensive way: you edit a fixture, the
- * stored seed is still schema-valid, the check passes, and the screen shows
- * yesterday's numbers. The edit appears to have done nothing, and finding out
- * why costs about an hour.
- *
  * Keying the storage on the version makes a stale seed *unreachable* rather
  * than *guarded against*. Bump `SEED_VERSION` and the old entry is simply not
- * looked up. The build gate in `scripts/check-fixture-invariants.mts` fails
- * when the fixture hash moves and this constant did not, so the bump is not
- * something anyone has to remember.
+ * looked up. The build gate fails when the fixture hash moves and this
+ * constant did not, so the bump is not something anyone has to remember.
+ *
+ * ## Other documents hear about changes
+ *
+ * The phone preview is the same app in an iframe. `storage` events do not
+ * fire in the document that wrote, and the iframe needs to hear about writes
+ * from the parent (and vice versa), so every mutation is announced on a
+ * BroadcastChannel and every document reloads its state and invalidates its
+ * queries when it hears one.
  */
 
 /** Bump on every change to the shape or content of the seeded fixture. */
 export const SEED_VERSION = 1
 
-const KEY = `agentic.store.v${SEED_VERSION}`
+const KEY = `aoc.store.v${SEED_VERSION}`
+const CHANNEL = 'aoc-store'
 
-/**
- * Scaffold. Replaced by the real state — orders, requisitions,
- * approvals, part-resolution decisions, audit entries — read from the
- * generated fixture.
- */
+export interface Assignment {
+  carrierId: string
+  truckId: string | null
+  at: string
+  by: string
+}
+
+export interface OrderRequestDraft {
+  id: string
+  customerId: string
+  shipToId: string
+  product: string
+  tonnes: number
+  windowStart: string
+  windowEnd: string
+  note: string
+  at: string
+}
+
 export interface MockState {
-  /** Seed schema version, mirrored into the payload for debugging. */
   v: number
-  /** Decisions the presenter has made during this walk. */
-  decisions: Record<string, unknown>
+  events: StatusEvent[]
+  requests: Record<string, CarrierRequest>
+  assignments: Record<string, Assignment>
+  priorities: Record<string, Priority>
+  pods: Record<string, PodDocument>
+  deviations: Deviation[]
+  notifications: Notification[]
+  reads: string[]
+  rules: NotificationRule[] | null
+  users: User[] | null
+  tickets: Ticket[]
+  security: SecurityConfig | null
+  locks: Record<string, string>
+  reports: ReportSpec[]
+  /** Orders the customer portal raised that the desk has not sent to the ERP yet. */
+  orderRequests: OrderRequestDraft[]
+  /** Orders created live during the walk (from a portal request). */
+  createdOrders: string[]
+  /** Free-form flags set by demo controls. */
+  flags: Record<string, boolean>
 }
 
 export function emptyState(): MockState {
-  return { v: SEED_VERSION, decisions: {} }
+  return {
+    v: SEED_VERSION,
+    events: [],
+    requests: {},
+    assignments: {},
+    priorities: {},
+    pods: {},
+    deviations: [],
+    notifications: [],
+    reads: [],
+    rules: null,
+    users: null,
+    tickets: [],
+    security: null,
+    locks: {},
+    reports: [],
+    orderRequests: [],
+    createdOrders: [],
+    flags: {},
+  }
 }
 
 let state: MockState | null = null
 let ready: Promise<MockState> | null = null
+const listeners = new Set<() => void>()
 
 function read(): MockState | null {
   try {
     const raw = sessionStorage.getItem(KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as MockState
-    /* Belt and braces: the key already encodes the version, so this can only
-     * fire if someone hand-edited storage. */
-    return parsed.v === SEED_VERSION ? parsed : null
+    return parsed.v === SEED_VERSION ? { ...emptyState(), ...parsed } : null
   } catch {
     return null
   }
@@ -61,10 +118,19 @@ function persist(next: MockState) {
   try {
     sessionStorage.setItem(KEY, JSON.stringify(next))
   } catch {
-    /* Storage full or blocked. The demo still works; it just will not survive
-     * a reload. Not worth interrupting a presenter over. */
+    /* Storage full or blocked. The demo still works; it will not survive a reload. */
   }
 }
+
+const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL) : null
+channel?.addEventListener('message', () => {
+  const fresh = read()
+  if (fresh) {
+    state = fresh
+    ready = Promise.resolve(fresh)
+    listeners.forEach((fn) => fn())
+  }
+})
 
 /** Await this before any read, so callers never race start-up ordering. */
 export function whenReady(): Promise<MockState> {
@@ -79,33 +145,27 @@ export function whenReady(): Promise<MockState> {
 }
 
 export function getState(): MockState {
-  if (!state) throw new Error('[mock] store read before whenReady() resolved')
+  if (!state) throw new Error('store read before whenReady()')
   return state
 }
 
-export function peekState(): MockState | null {
-  return state
-}
-
-export function mutate(fn: (s: MockState) => void): MockState {
-  const s = getState()
+export async function mutate(fn: (draft: MockState) => void): Promise<MockState> {
+  const s = await whenReady()
   fn(s)
   persist(s)
+  channel?.postMessage({ v: SEED_VERSION, at: Date.now() })
   return s
 }
 
-export async function reset(): Promise<MockState> {
-  sessionStorage.removeItem(KEY)
-  state = null
-  ready = null
-  return whenReady()
+/** Subscribe to writes made by other documents (the phone preview). */
+export function onExternalChange(fn: () => void): () => void {
+  listeners.add(fn)
+  return () => listeners.delete(fn)
 }
 
-/* Exposed so the standing verification protocol can assert that exactly one
- * seed key is held and that it matches the running build. */
-declare global {
-  interface Window {
-    __SEED_VERSION__?: number
+export function reset() {
+  for (const k of Object.keys(sessionStorage)) {
+    if (k.startsWith('aoc.')) sessionStorage.removeItem(k)
   }
+  channel?.postMessage({ v: SEED_VERSION, at: Date.now(), reset: true })
 }
-if (typeof window !== 'undefined') window.__SEED_VERSION__ = SEED_VERSION

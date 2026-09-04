@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite-node scripts/check-no-identity.mts && vite-node scripts/check-fixture-invariants.mts && tsc -b && vite build",
+    "build": "vite-node scripts/check-no-identity.mts && vite-node scripts/check-fixture-invariants.mts && vite-node scripts/check-i18n.mts && tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "check:fixtures": "vite-node scripts/check-fixture-invariants.mts",
+    "check:i18n": "vite-node scripts/check-i18n.mts",
+    "check:identity": "vite-node scripts/check-no-identity.mts",
     "probe": "vite-node scripts/probe.mts"
   },
   "dependencies": {
