@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Check, Download, FileText, Search, X } from 'lucide-react'
 import { api } from '@/services'
@@ -12,6 +12,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { useAuth } from '@/app/auth'
 import { useScope } from '@/app/useActor'
 import { downloadUrl } from '@/lib/download'
+import { DocumentDialog } from '@/components/documents/DocumentDialog'
+import { documentFilename, documentHtml } from '@/documents/html'
 import { formatDateTime } from '@/fixtures/calendar'
 import { useLang } from '@/i18n'
 import { cn } from '@/lib/utils'
@@ -91,22 +93,20 @@ export function HistoryRoute() {
 
 function DocRow({ doc, orderId }: { doc: OrderDocument; orderId: string }) {
   const { t, lang } = useLang()
-  function download() {
-    const html = `<!doctype html><meta charset="utf-8"><title>${doc.title}</title><body style="font-family:Inter,system-ui;padding:32px"><h1 style="font-size:20px">${doc.title}</h1><p>${doc.reference} · ${doc.source} · ${formatDateTime(doc.issuedAt, lang)}</p></body>`
-    downloadUrl(URL.createObjectURL(new Blob([html], { type: 'text/html' })), `${doc.reference}.html`)
+  const [open, setOpen] = useState(false)
+  async function download() {
+    const model = await api.orders.document(orderId, doc.id)
+    downloadUrl(URL.createObjectURL(new Blob([documentHtml(model, lang)], { type: 'text/html' })), documentFilename(model))
   }
   return (
     <li className="flex items-center gap-3 py-2.5 text-xs">
       <FileText className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
-      <span className="min-w-0 flex-1">
-        <span className="block font-medium">{doc.title}</span>
+      <button type="button" onClick={() => setOpen(true)} data-open-doc={doc.kind} className="min-w-0 flex-1 text-left">
+        <span className="hover:text-accent-text block font-medium">{doc.title}</span>
         <span className="text-muted-foreground block text-2xs">{doc.source} · {formatDateTime(doc.issuedAt, lang)}</span>
-      </span>
-      {doc.kind === 'signed_bol' ? (
-        <Button asChild size="sm" variant="outline"><Link to={`/epod/${orderId}`}>{t('common.open')}</Link></Button>
-      ) : (
-        <Button size="sm" variant="ghost" onClick={download} aria-label={t('common.download')}><Download className="size-3.5" aria-hidden /></Button>
-      )}
+      </button>
+      <Button size="sm" variant="ghost" onClick={download} aria-label={t('common.download')}><Download className="size-3.5" aria-hidden /></Button>
+      <DocumentDialog orderId={orderId} doc={open ? doc : null} onOpenChange={(o) => !o && setOpen(false)} />
     </li>
   )
 }

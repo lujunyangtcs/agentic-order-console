@@ -9,7 +9,7 @@ import { EpodRoute } from '@/routes/epod/EpodRoute'
 import { StakeholderRoute } from '@/routes/stakeholder/StakeholderRoute'
 import { YardRoute } from '@/routes/yard/YardRoute'
 import { DispatchRoute } from '@/routes/dispatch/DispatchRoute'
-import { ReportBuilderRoute } from '@/routes/reports/ReportBuilderRoute'
+import { ReportsRoute } from '@/routes/reports/ReportsRoute'
 import { ScorecardRoute } from '@/routes/reports/ScorecardRoute'
 import { BenchmarkRoute } from '@/routes/reports/BenchmarkRoute'
 import { TeamRoute } from '@/routes/reports/TeamRoute'
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
       { path: 'track', element: gate(ALL, <TrackRoute />) },
 
       // ── reports ─────────────────────────────────────────────────────
-      { path: 'reports', element: gate(STAFF, <ReportBuilderRoute />) },
+      { path: 'reports', element: gate(STAFF, <ReportsRoute />) },
       { path: 'reports/scorecard', element: gate([...STAFF, 'Carrier'], <ScorecardRoute />) },
       { path: 'reports/benchmark', element: gate(STAFF, <BenchmarkRoute />) },
       { path: 'reports/team', element: gate(CVC, <TeamRoute />) },

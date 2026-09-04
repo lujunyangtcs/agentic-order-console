@@ -113,6 +113,43 @@ export interface OrderLock {
   since: string
 }
 
+/**
+ * A document as data: everything a bill of lading, a delivery record or an
+ * invoice prints, taken from the order and its events. Rendering to paper
+ * happens in `src/documents/html.ts`; this is the single source it reads.
+ */
+export interface DocumentModel {
+  kind: OrderDocument['kind']
+  reference: string
+  issuedAt: string
+  source: string
+  seller: { name: string; address: string; taxNo: string; console: string }
+  order: {
+    erpRef: string
+    consoleId: string
+    createdAt: string
+    requestRef: string
+    customerPo: string
+    owner: string
+    priority: Priority
+    windowStart: string
+    windowEnd: string
+    incoterms: string
+    paymentTerms: string
+  }
+  customer: { name: string; accountNo: string; address: string; contact: string; language: 'en' | 'fr' }
+  shipTo: { id: string; name: string; address: string; unloadMinutes: number }
+  terminal: { id: string; name: string; siteCode: string; address: string }
+  line: { code: Product; description: string; material: string; tonnes: number; unitPrice: number; amount: number }
+  carrier: { name: string; scac: string; truckPlate: string; driver: string; ratePerTonne: number; freightAmount: number; connected: boolean } | null
+  scale: { ticket: string; tare: number; gross: number; net: number; seal: string; loadedAt: string; bay: number; operator: string } | null
+  events: StatusEvent[]
+  pod: { signedBy: string; signedAt: string; signaturePng: string | null; fileName: string | null; source: 'signature' | 'upload'; annotations: { by: string; at: string; text: string }[]; archivedAt: string | null } | null
+  deviations: { kind: DeviationKind; qtyDelta: number | null; note: string; filedBy: string; filedAt: string; state: string }[]
+  delivery: { deliveredAt: string; onTime: boolean; cycleHours: number | null; unloadMinutes: number } | null
+  invoice: { number: string; date: string; due: string; subtotal: number; taxes: { label: string; rate: number; amount: number }[]; total: number; currency: 'CAD' } | null
+}
+
 export interface HistoryFilter {
   q?: string
   customerId?: string
@@ -424,6 +461,8 @@ export interface OrdersApi {
   setPriority(orderId: string, priority: Priority, actor: Actor): Promise<AdvanceResult>
   /** Customer portal: raise a request the desk will send to the ERP. */
   raiseRequest(draft: CustomerOrderDraft): Promise<WorklistRow>
+  /** One of the order's documents, as data, for viewing, printing or download. */
+  document(orderId: string, docId: string): Promise<DocumentModel>
   /** Desk: hand a request to the ERP; the ERP returns its order number. */
   createInErp(orderId: string, actor: Actor): Promise<AdvanceResult>
   exceptions(): Promise<WorklistRow[]>

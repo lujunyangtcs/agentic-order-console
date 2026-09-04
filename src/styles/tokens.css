@@ -33,6 +33,7 @@
   --secondary-foreground: #ffffff;
 
   /* The one action colour. Used sparingly, on the thing you act on. */
+  --accent-bright: #5b93ff;
   --accent: #1963ff;
   --accent-foreground: #ffffff;
   /* The same blue darkened for 11–13px type: 6.1:1 on white, 5.6:1 on the

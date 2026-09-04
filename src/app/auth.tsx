@@ -29,8 +29,8 @@ export interface Session {
 
 export const DEMO_IDENTITY = {
   userId: 'U-0412',
-  name: 'Alex Morgan',
-  email: 'alex.morgan@example.com',
+  name: 'RW',
+  email: 'rw@example.com',
   tenantName: TENANT.name,
 } as const
 

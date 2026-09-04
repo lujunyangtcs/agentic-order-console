@@ -18,6 +18,9 @@ import { SendToErpDialog } from '@/components/orders/SendToErpDialog'
 import { UploadBolDialog } from '@/components/pod/UploadBolDialog'
 import { SignDeliveryDialog } from '@/components/pod/SignDeliveryDialog'
 import { DeviationDialog } from '@/components/pod/DeviationDialog'
+import { DocumentDialog } from '@/components/documents/DocumentDialog'
+import { documentFilename, documentHtml } from '@/documents/html'
+import { downloadUrl } from '@/lib/download'
 import { useAuth } from '@/app/auth'
 import { useActor } from '@/app/useActor'
 import { SYSTEMS } from '@/app/product'
@@ -398,33 +401,24 @@ const DOC_ICON: Record<OrderDocument['kind'], typeof FileText> = {
 
 function DocumentRow({ doc, order }: { doc: OrderDocument; order: OrderDetail }) {
   const { t, lang } = useLang()
+  const [open, setOpen] = useState(false)
   const Icon = DOC_ICON[doc.kind]
-  function download() {
-    const html = `<!doctype html><meta charset="utf-8"><title>${doc.title}</title><body style="font-family:Inter,system-ui;padding:32px;color:#0b1220"><h1 style="font-size:20px">${doc.title}</h1><p>${t('col.reference')}: <b>${doc.reference}</b></p><p>${t('col.source')}: ${doc.source} · ${formatDateTime(doc.issuedAt, lang)}</p><hr><p>${order.customerName} · ${order.shipToAddress}</p><p>${order.tonnes} t ${order.product} · ${order.terminalName}</p></body>`
-    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${doc.reference}.html`
-    a.click()
-    URL.revokeObjectURL(url)
+  async function download() {
+    const model = await api.orders.document(order.id, doc.id)
+    downloadUrl(URL.createObjectURL(new Blob([documentHtml(model, lang)], { type: 'text/html' })), documentFilename(model))
   }
   return (
     <li className="flex items-center gap-3 px-5 py-2.5 text-xs">
       <Icon className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
-      <span className="min-w-0 flex-1">
-        <span className="block font-medium">{doc.title}</span>
+      <button type="button" onClick={() => setOpen(true)} data-open-doc={doc.kind} className="min-w-0 flex-1 rounded-sm text-left focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none">
+        <span className="hover:text-accent-text block font-medium">{doc.title}</span>
         <span className="text-muted-foreground block text-2xs">{doc.source} · {formatDateTime(doc.issuedAt, lang)}</span>
-      </span>
+      </button>
       <span className="text-muted-foreground shrink-0 font-mono text-2xs">{doc.reference}</span>
-      {doc.kind === 'signed_bol' ? (
-        <Button asChild size="sm" variant="outline" className="shrink-0" data-open-epod>
-          <Link to={`/epod/${order.id}`}>{t('common.open')}</Link>
-        </Button>
-      ) : (
-        <Button size="sm" variant="ghost" className="shrink-0" onClick={download} aria-label={t('common.download')} data-download={doc.kind}>
-          <Download className="size-3.5" aria-hidden />
-        </Button>
-      )}
+      <Button size="sm" variant="ghost" className="shrink-0" onClick={download} aria-label={t('common.download')} data-download={doc.kind}>
+        <Download className="size-3.5" aria-hidden />
+      </Button>
+      <DocumentDialog orderId={order.id} doc={open ? doc : null} onOpenChange={(o) => !o && setOpen(false)} />
     </li>
   )
 }

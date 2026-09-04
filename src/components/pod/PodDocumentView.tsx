@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRef, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Download, FileText, MessageSquarePlus, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -7,22 +7,26 @@ import { PermissionGate } from '@/components/state/PermissionGate'
 import { api } from '@/services'
 import type { OrderDetail } from '@/services'
 import { useActor } from '@/app/useActor'
-import { PRODUCT, SYSTEMS } from '@/app/product'
+import { documentFilename, documentHtml } from '@/documents/html'
 import { downloadUrl } from '@/lib/download'
-import { formatDateTime, formatTime } from '@/fixtures/calendar'
-import { productKey, statusKey, useLang } from '@/i18n'
+import { formatDateTime } from '@/fixtures/calendar'
+import { useLang } from '@/i18n'
 
 /**
- * The signed bill of lading as a document: letterhead, the load, the
- * milestones, the signature, and whatever the stakeholders have added. The
- * same view downloads as HTML and prints through the template's print CSS.
+ * The signed bill of lading as the paper it is, with the team's notes under
+ * it. The frame shows the same document that Download saves and Print
+ * sends out, straight from the order record.
  */
 export function PodDocumentView({ order: d }: { order: OrderDetail }) {
   const { t, lang } = useLang()
   const qc = useQueryClient()
   const actor = useActor()
+  const frame = useRef<HTMLIFrameElement>(null)
   const [note, setNote] = useState('')
   const pod = d.pod
+  const signedDoc = d.documents.find((x) => x.kind === 'signed_bol')
+  const model = useQuery({ queryKey: ['document', d.id, signedDoc?.id, lang, pod?.annotations.length], queryFn: () => api.orders.document(d.id, signedDoc!.id), enabled: !!signedDoc })
+  const html = model.data ? documentHtml(model.data, lang) : null
   const annotate = useMutation({
     mutationFn: () => api.pod.annotate(d.id, note.trim(), actor),
     onSuccess: () => { toast.success(t('epod.annotated')); setNote(''); qc.invalidateQueries() },
@@ -31,9 +35,8 @@ export function PodDocumentView({ order: d }: { order: OrderDetail }) {
   if (!pod) return null
 
   function download() {
-    const sheet = document.querySelector('[data-print-sheet]')
-    const html = `<!doctype html><meta charset="utf-8"><title>${pod!.bolNumber}</title><style>body{font-family:Inter,system-ui;color:#0b1220;padding:32px;max-width:760px;margin:auto}h1{font-size:20px}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border-bottom:1px solid #ddd;padding:6px 8px;text-align:left}img{max-width:320px}.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#555}</style><body>${sheet?.innerHTML ?? ''}</body>`
-    downloadUrl(URL.createObjectURL(new Blob([html], { type: 'text/html' })), `${pod!.bolNumber}-signed.html`)
+    if (!html || !model.data) return
+    downloadUrl(URL.createObjectURL(new Blob([html], { type: 'text/html' })), documentFilename(model.data))
   }
 
   return (
@@ -41,53 +44,16 @@ export function PodDocumentView({ order: d }: { order: OrderDetail }) {
       <header className="border-border flex flex-wrap items-center gap-2 border-b px-5 py-3.5">
         <FileText className="text-muted-foreground size-4" aria-hidden />
         <h2 className="min-w-0 flex-1 text-sm font-semibold">{t('epod.title')} · {pod.bolNumber}</h2>
-        <Button size="sm" variant="outline" onClick={download} data-epod-download><Download className="size-3.5" aria-hidden />{t('common.download')}</Button>
-        <Button size="sm" variant="outline" onClick={() => window.print()} data-epod-print><Printer className="size-3.5" aria-hidden />{t('epod.print')}</Button>
+        <Button size="sm" variant="outline" onClick={download} disabled={!html} data-epod-download><Download className="size-3.5" aria-hidden />{t('common.download')}</Button>
+        <Button size="sm" variant="outline" onClick={() => frame.current?.contentWindow?.print()} disabled={!html} data-epod-print><Printer className="size-3.5" aria-hidden />{t('epod.print')}</Button>
       </header>
 
-      <div data-print-sheet className="px-6 py-5">
-        <p className="eyebrow text-muted-foreground">{PRODUCT.name}</p>
-        <h1 className="font-display mt-1 text-xl font-semibold">{t('epod.heading')}</h1>
-        <p className="text-muted-foreground text-xs">{pod.bolNumber} · {SYSTEMS.erp} {d.erpRef} · {formatDateTime(pod.signedAt, lang)}</p>
-
-        <dl className="mt-4 grid gap-x-8 gap-y-2 text-xs sm:grid-cols-2">
-          {[
-            [t('order.fact.customer'), d.customerName],
-            [t('order.fact.shipTo'), d.shipToAddress],
-            [t('order.fact.terminal'), d.terminalName],
-            [t('order.fact.product'), `${d.tonnes} t · ${t(productKey(d.product))}`],
-            [t('order.fact.carrier'), d.carrierName ?? '—'],
-            [t('order.fact.truck'), d.truck ? `${d.truck.plate} · ${d.truck.driver}` : '—'],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-3 border-b border-dashed py-1"><dt className="text-muted-foreground">{k}</dt><dd className="text-right font-medium">{v}</dd></div>
-          ))}
-        </dl>
-
-        <h3 className="mt-5 text-xs font-semibold">{t('epod.milestones')}</h3>
-        <table className="mt-1.5 w-full text-xs">
-          <tbody>
-            {d.events.map((e) => (
-              <tr key={e.id} className="border-border border-b"><td className="tabular py-1 pr-3 text-muted-foreground">{formatTime(e.at)}</td><td className="py-1 pr-3">{t(statusKey(e.status))}</td><td className="text-muted-foreground py-1">{e.actor}</td></tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="eyebrow text-muted-foreground">{t('epod.signedBy')}</p>
-            <p className="mt-1 text-sm font-medium">{pod.signedBy}</p>
-            <p className="text-muted-foreground text-2xs">{formatDateTime(pod.signedAt, lang)}</p>
-          </div>
-          <div className="border-border rounded-md border border-dashed p-2">
-            {pod.signaturePng ? (
-              <img src={pod.signaturePng} alt={t('epod.signature')} className="mx-auto h-20 object-contain" />
-            ) : pod.file ? (
-              <p className="text-muted-foreground flex h-20 items-center justify-center gap-2 text-xs"><FileText className="size-4" aria-hidden />{pod.file.name} · {pod.file.sizeKb} KB · {SYSTEMS.carrierTms}</p>
-            ) : (
-              <p className="text-muted-foreground flex h-20 items-center justify-center text-xs">{t('epod.signedOnDevice')}</p>
-            )}
-          </div>
-        </div>
+      <div className="bg-muted p-3" data-print-sheet>
+        {html ? (
+          <iframe ref={frame} srcDoc={html} title={`${t('epod.title')} ${pod.bolNumber}`} className="border-border h-[960px] w-full rounded-md border bg-white" data-document-frame />
+        ) : (
+          <div className="h-[960px] w-full animate-pulse rounded-md" />
+        )}
       </div>
 
       <div className="border-border border-t px-5 py-4">

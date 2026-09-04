@@ -511,3 +511,8 @@ html[data-motion='reduce'] *::after {
     margin: 12mm;
   }
 }
+
+/* The current step on the status rail: a slow breathing ring that stays on
+   while the order sits there. Off under reduced motion. */
+@keyframes step-pulse { 0% { transform: scale(1); opacity: .45; } 70% { transform: scale(1.9); opacity: 0; } 100% { transform: scale(1.9); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { [style*="step-pulse"] { animation: none !important; opacity: 0 !important; } }

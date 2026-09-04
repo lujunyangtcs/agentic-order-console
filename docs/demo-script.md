@@ -2,7 +2,7 @@
 
 Every number below is what the screen shows on a fresh session (open the app in a new tab, or use `?dev=1 → Reset demo data`). Today's open orders are authored relative to the moment the app starts, so "sent 12 min ago" is literally true; times of day shift with the clock, the order numbers and names do not.
 
-**Setup.** 1440×900 browser, English, signed in as the service desk (the default). Role switcher is in the top bar; the identity stays "Alex Morgan" throughout — only the hat changes.
+**Setup.** 1440×900 browser, English, signed in as the service desk (the default). Role switcher is in the top bar; the identity stays "RW" throughout — only the hat changes.
 
 ## Opening (60 s)
 

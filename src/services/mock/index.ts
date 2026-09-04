@@ -18,6 +18,7 @@ import {
   openRequestOf, podOf, priorityOf, documentsOf, openRows, filterRows, summaryOf, detailOf, historyRows,
   positionOf, etaOf, yardRows, dispatchColumns, requestRows, requestsSummaryOf, allDeviations, needsAttention, lockOf,
 } from '@/fixtures/derive'
+import { documentModel } from '@/fixtures/documents'
 import { recommendFor } from '@/fixtures/recommend'
 import { evaluateRules, rulesOf, notificationsFor } from '@/fixtures/notify'
 import { scorecardRows, benchmarkSeries, workloadCells, buildReport, eventLog, liveAnalytics } from '@/fixtures/analytics'
@@ -259,6 +260,13 @@ export const mockApi: Api = {
         entry = audit(s, actor, o.erpRef, 'Priority changed', { before, after: priority })
       })
       return respond(result(getState(), o, null, [], [entry]))
+    },
+    async document(orderId, docId) {
+      const { state, order: o } = await order(orderId)
+      const d = detailOf(o, state)
+      const doc = d.documents.find((x) => x.id === docId)
+      if (!doc) throw new Error(`Unknown document ${docId}`)
+      return respond(documentModel(d, o, doc, state))
     },
     async raiseRequest(draft) {
       const state = await whenReady()
