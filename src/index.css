@@ -1,0 +1,493 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import './styles/tokens.css';
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* App shell, not a document. The page itself never scrolls — only the main
+   * region does — so the rail and top bar stay put and there is no band of
+   * background below the content when you reach the end.
+   *
+   * Locking height here rather than leaning on 100dvh on the root: dvh is
+   * reported inconsistently while browser chrome is showing or hiding, and a
+   * root that is even slightly taller than the visible area gives the whole
+   * document a scrollbar and a white tail. */
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  html {
+    /* Desktop operational tool. Body copy is 14px, not the mobile 16px rule. */
+    font-size: 16px;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+
+  /* Headings carry the brand voice, so they are set in the display face the
+   * marketing site uses — and set the way that site sets them: large, LIGHT,
+   * and tracked in rather than out. A 24px heading at weight 600 shouts; the
+   * same size at 500 with -0.02em tracking reads as considered, which is the
+   * claim this product is making about itself. Body and table text stay in
+   * Inter, which is far more legible than Grotesk at 11px in a dense row. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Every number in a reconciliation product must align vertically.
+   * Non-negotiable — plan §13.2. */
+  table,
+  [data-numeric],
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /* Focus rings are never removed. shadcn/Radix rely on :focus-visible. */
+  :focus-visible {
+    @apply outline-ring outline-2 outline-offset-2;
+  }
+}
+
+@layer components {
+  /* Cards answer the pointer.
+   *
+   * A dashboard where nothing responds to the mouse reads as a picture of an
+   * interface rather than one you can use — you cannot tell what is a panel and
+   * what is a thing you can open without clicking to find out. The response is
+   * deliberately small: the border firms up, a soft shadow appears underneath,
+   * and the card rises two pixels. Enough to feel picked up, not enough to make
+   * a grid of them twitch as the pointer crosses.
+   *
+   * Border and shadow are tints of the text colour, like every other rule in
+   * this palette, so a hovered card stays the same temperature as the page. */
+  /* The rise uses `translate`, NOT `transform`. Cards enter with a
+   * `transform`-based keyframe that has `fill: both`, so the animation's final
+   * value stays applied for the life of the element and outranks any transform
+   * a hover rule could set — the lift would silently never happen. `translate`
+   * is an independent property, so the two compose instead of fighting. */
+  .lift {
+    transition:
+      border-color 180ms ease-out,
+      box-shadow 180ms ease-out,
+      translate 180ms ease-out;
+  }
+
+  .lift:hover {
+    border-color: rgb(33 33 33 / 0.18);
+    box-shadow:
+      0 1px 2px rgb(33 33 33 / 0.04),
+      0 10px 26px -10px rgb(33 33 33 / 0.14);
+    translate: 0 -2px;
+  }
+
+  /* A card you can actually open earns a little more, and the cursor says so. */
+  .lift-link:hover {
+    border-color: rgb(33 33 33 / 0.24);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lift {
+      transition: border-color 180ms ease-out, box-shadow 180ms ease-out;
+    }
+    .lift:hover {
+      translate: none;
+    }
+  }
+
+  /* Figures are the other place the voice belongs. A KPI is read as a shape
+   * before it is read as a number. */
+  .display,
+  .figure {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* The site's small-caps eyebrow: wide tracking, and wide enough to be a
+   * deliberate texture rather than a heading that lost its size. */
+  .eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: var(--text-2xs);
+    font-weight: 500;
+  }
+
+  /* The analysis surface — where ABC speaks rather than reports.
+   *
+   * A three-stop wash. An earlier revision flattened
+   * it to a single four-percent tint because §10.5 forbade gradients outright
+   * and §21 made "no gradients" an acceptance criterion; that reasoning held
+   * until the flat version was put beside a graded one.
+   *
+   * The colour does not change — the same mint the panel has always had, from
+   * the same tokens. What changes is that it is graded again: heaviest at the
+   * top-left, resolving to white at the bottom-right, so the tint sits behind
+   * the figure and the body copy lands on the palest part of the field.
+   *
+   * `--ai-muted` exists because normal secondary text measures 3.94:1 against
+   * the darkest stop and fails at 12px. That stop is back, so that token is
+   * still earning its place.
+   *
+   * This is the one gradient the visual gate permits, and it is named there. */
+  .ai-surface {
+    background-image: linear-gradient(
+      135deg,
+      var(--ai-from) 0%,
+      var(--ai-via) 52%,
+      var(--ai-to) 100%
+    );
+    border: 1px solid var(--ai-border);
+  }
+}
+
+@layer components {
+  /* The tour ring. Breathes so the highlighted control stays findable while
+     you read the card beside it. */
+  /* Sign-in entrances.
+   *
+   * Four curves, borrowed from a reference build whose entrance reads better
+   * than the one I had. What makes it work is that the photograph is on its
+   * own timeline: the panels settle in under a second while the image keeps
+   * easing out of a 14% overscale for nearly three, so the screen is still
+   * quietly moving after the layout has stopped. Everything uses the same
+   * cubic-bezier(0.22, 1, 0.36, 1) so the whole entrance shares one feel.
+   */
+  @keyframes panel-in {
+    0% { opacity: 0; transform-origin: center bottom; transform: translateY(26px) scaleY(0.94); }
+    100% { opacity: 1; transform: none; }
+  }
+
+  @keyframes photo-in {
+    0% { opacity: 0; transform: scale(1.14); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes rise-in {
+    0% { opacity: 0; transform: translateY(16px); }
+    100% { opacity: 1; transform: none; }
+  }
+
+  @keyframes card-in {
+    0% { opacity: 0; transform: translateY(30px) scale(0.975); }
+    100% { opacity: 1; transform: none; }
+  }
+
+  /* ---------------------------------------------------------------------
+   * Page and component entrances, everywhere.
+   *
+   * Driven by CSS rather than by a motion library and by nth-child rather than
+   * by props, so a new screen or a new card animates without anyone
+   * remembering to wire it up. The rule is applied to the routed region and
+   * cascades to whatever that page happens to be built from.
+   *
+   * Everything shares the sign-in easing so navigating around the product
+   * feels like one piece of software rather than several.
+   * ------------------------------------------------------------------- */
+  /* One level down, not the page container itself: every route renders a
+     single positioning wrapper, so `.page-enter > *` would animate the whole
+     screen as one lump. The blocks INSIDE it are what should arrive in
+     sequence. */
+  .page-enter > * > *,
+  /* Some pages wrap all their sections in one flex column. When the container
+     has a single child, that child is scaffolding, not content — reach past it
+     so the blocks inside still arrive one at a time. */
+  .page-enter > * > *:only-child > * {
+    animation: rise-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Nine covers every screen here; anything beyond shares the last delay
+     rather than trailing off into a slow drip. */
+  .page-enter > * > *:nth-child(1),
+  .page-enter > * > *:only-child > *:nth-child(1) { animation-delay: 20ms }
+  .page-enter > * > *:nth-child(2),
+  .page-enter > * > *:only-child > *:nth-child(2) { animation-delay: 80ms }
+  .page-enter > * > *:nth-child(3),
+  .page-enter > * > *:only-child > *:nth-child(3) { animation-delay: 140ms }
+  .page-enter > * > *:nth-child(4),
+  .page-enter > * > *:only-child > *:nth-child(4) { animation-delay: 200ms }
+  .page-enter > * > *:nth-child(5),
+  .page-enter > * > *:only-child > *:nth-child(5) { animation-delay: 250ms }
+  .page-enter > * > *:nth-child(6),
+  .page-enter > * > *:only-child > *:nth-child(6) { animation-delay: 300ms }
+  .page-enter > * > *:nth-child(7),
+  .page-enter > * > *:only-child > *:nth-child(7) { animation-delay: 340ms }
+  .page-enter > * > *:nth-child(8),
+  .page-enter > * > *:only-child > *:nth-child(8) { animation-delay: 380ms }
+  .page-enter > * > *:nth-child(n+9),
+  .page-enter > * > *:only-child > *:nth-child(n+9) { animation-delay: 420ms }
+
+  /* Grids and lists of cards deal themselves out. Put this on the container,
+     not the cards — a card should not have to know it is in a grid. */
+  .stagger > * {
+    animation: card-in 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 60ms }
+  .stagger > *:nth-child(2) { animation-delay: 120ms }
+  .stagger > *:nth-child(3) { animation-delay: 180ms }
+  .stagger > *:nth-child(4) { animation-delay: 240ms }
+  .stagger > *:nth-child(5) { animation-delay: 290ms }
+  .stagger > *:nth-child(6) { animation-delay: 340ms }
+  .stagger > *:nth-child(n+7) { animation-delay: 380ms }
+
+  @keyframes tour-rise {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes tour-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgb(56 189 248 / 0.45); }
+    50% { box-shadow: 0 0 0 6px rgb(56 189 248 / 0); }
+  }
+
+  /* Ticker. Translating by exactly -50% of a list rendered twice gives a seam
+     that lands on an identical frame, so the loop has no visible jump. */
+  @keyframes ticker-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .ticker-track {
+    animation: ticker-scroll linear infinite;
+    will-change: transform;
+  }
+
+  .ticker-mask {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 3rem,
+      black calc(100% - 3rem),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 3rem,
+      black calc(100% - 3rem),
+      transparent 100%
+    );
+  }
+}
+
+/* Reduced motion, declared twice on purpose.
+ *
+ * The media query is the real rule. The `html[data-motion="reduce"]` twin
+ * exists so the behaviour can be asserted from the browser during
+ * verification: JavaScript cannot flip `prefers-reduced-motion`, so without a
+ * simulation hook the reduced-motion path is the one accessibility rule nobody
+ * ever actually checks. `main.tsx` sets the attribute from `?motion=reduce`.
+ *
+ * Every rule below must appear in both selector lists or the twin lies. */
+@media (prefers-reduced-motion: reduce) {
+  /* A breathing ring is decoration; stop it outright rather than letting the
+     global reset collapse it to a 0.01ms flicker. */
+  .page-enter > * > *,
+  .page-enter > * > *:only-child > *,
+  .stagger > * {
+    animation: none !important;
+  }
+
+  [style*='tour-pulse'],
+  [style*='tour-rise'],
+  [style*='panel-in'],
+  [style*='photo-in'],
+  [style*='card-in'],
+  [style*='rise-in'] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* The global reset below zeroes animation-duration, which would snap the
+     ticker to its end frame. Stop it properly and let the reader scroll.
+     The marquee degrades into a real scroller — never the other way round. */
+  .ticker-track {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .ticker-scroller {
+    overflow-x: auto !important;
+  }
+}
+
+html[data-motion='reduce'] .page-enter > * > *,
+html[data-motion='reduce'] .page-enter > * > *:only-child > *,
+html[data-motion='reduce'] .stagger > * {
+  animation: none !important;
+}
+
+html[data-motion='reduce'] [style*='tour-pulse'],
+html[data-motion='reduce'] [style*='tour-rise'],
+html[data-motion='reduce'] [style*='panel-in'],
+html[data-motion='reduce'] [style*='photo-in'],
+html[data-motion='reduce'] [style*='card-in'],
+html[data-motion='reduce'] [style*='rise-in'] {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html[data-motion='reduce'] .ticker-track {
+  animation: none !important;
+  transform: none !important;
+}
+
+html[data-motion='reduce'] .ticker-scroller {
+  overflow-x: auto !important;
+}
+
+html[data-motion='reduce'] *,
+html[data-motion='reduce'] *::before,
+html[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Print ────────────────────────────────────────────────────────────────
+ *
+ * One thing in this product is worth printing: the build sheet. A planner
+ * walks it to the floor, and the floor does not have the app open.
+ *
+ * Everything here exists because the screen layout actively prevents printing.
+ * `html, body, #root { height: 100%; overflow: hidden }` is right for an
+ * application shell and fatal for a printer — it clips the document to a single
+ * viewport-height page and drops the rest silently. So print unlocks the height
+ * first, then removes the chrome, then promotes the sheet out of the scroll
+ * container it lives in on screen.
+ *
+ * The rule that is not a preference: **the fidelity footer prints**. The sheet
+ * is an illustrative drawing carrying `manufacturingUse: false`, and a printed
+ * copy that has lost the label saying so is a drawing that can be mistaken for
+ * a manufacturing document on a shop floor. `break-inside: avoid` keeps it
+ * attached to the drawing rather than orphaned onto a second page.
+ *
+ * Verified structurally via a `[data-print-preview]` mirror of these rules, not
+ * through the browser's own print pipeline — pagination itself is unverified.
+ */
+@media print {
+  html,
+  body,
+  #root {
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Navigation, search, activity rail, toolbars — none of it means anything on
+   * paper, and all of it costs a column of width. */
+  aside,
+  header,
+  nav,
+  [data-x-scroll]::-webkit-scrollbar,
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  /* Every height cap and scroller in the document, not only the ones inside the
+   * sheet. The station list sits *outside* it with `max-height: 520px`, so the
+   * first version of this rule printed nine of seventeen stations and a scroll
+   * gutter — a clipped list looks like a complete one on paper, which is the
+   * worst failure a printed document can have. */
+  main,
+  main * {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Releasing the cap let the list grow; the panel around it kept the height
+   * the screen layout had given it, so the seventeenth row printed outside its
+   * own border. Containers grow to their content on paper — and a row never
+   * splits across a page, because half a component row reads as a whole one. */
+  main section,
+  main ul,
+  main ol,
+  main li,
+  main tbody {
+    height: auto !important;
+  }
+
+  /* `flex-1` is `flex-basis: 0`, so a list inside an auto-height column flex
+   * panel has a base size of nothing: the panel measures itself as just its
+   * header and the list spills past the border it should have grown. This is
+   * why releasing `max-height` alone printed the seventeenth row outside its
+   * own panel. On paper a list sizes to its content. */
+  main ul,
+  main ol {
+    flex: none !important;
+  }
+
+  main li,
+  main tr {
+    break-inside: avoid;
+  }
+
+  /* The sheet is inside a contained scroll viewport on screen. On paper the
+   * containment is the bug: it would print one screenful of a drawing that is
+   * wider than the page. */
+  [data-print-sheet],
+  [data-print-sheet] * {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  [data-print-sheet] {
+    border: none;
+    break-inside: avoid;
+  }
+
+  /* The drawing only. An unscoped `[data-print-sheet] svg` also matches every
+   * toolbar icon inside the sheet and collapses each one to 0×0 — caught by
+   * measuring what the selector actually hit rather than trusting it. */
+  [data-print-drawing] {
+    /* `min-width` is the one that matters. The drawing carries an inline
+     * `min-width: 3280px` so it can overflow its scroll container on screen,
+     * and a print rule that sets only `width: 100%` loses to it silently —
+     * the element simply refuses to shrink and runs off the page. Overriding
+     * width without min-width looks like a fix and is not one. */
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  [data-print-sheet] footer {
+    break-inside: avoid;
+    /* Never let the fidelity statement page-break away from the drawing. */
+    break-before: avoid;
+  }
+
+  @page {
+    margin: 12mm;
+  }
+}

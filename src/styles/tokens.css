@@ -1,0 +1,338 @@
+/* ---------------------------------------------------------------------------
+ * Design tokens
+ *
+ * A warm ivory ground, near-black text and a single teal accent. Warm rather
+ * than the usual cool blue-grey because this is an operational tool people sit
+ * in front of all day, and because it leaves the cool end of the spectrum free
+ * to mean something: every blue on screen is a tenant mark or engineering line
+ * art, never decoration.
+ *
+ * Density, severity and verdict colour are separate systems below. They answer
+ * a different question — how urgent, how certain — and deliberately do not
+ * borrow from the brand ramp.
+ *
+ * RULE: components never use raw hex. Everything goes through a token.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  /* --- brand / surface ---------------------------------------------------- */
+  /* Warm ivory rather than a cool blue-grey. One substitution, and it does
+   * most of the work of separating this from generic dashboard software. */
+  --background: #f5f4f0;
+  --foreground: #212121;
+  --surface: #ffffff;
+  --surface-foreground: #212121;
+
+  --card: #ffffff;
+  --card-foreground: #212121;
+  --popover: #ffffff;
+  --popover-foreground: #212121;
+
+  --primary: #212121;            /* near-black. The site has no navy in it. */
+  --primary-foreground: #ffffff;
+  --secondary: #4a4a4a;
+  --secondary-foreground: #ffffff;
+
+  /* The site's teal, and the mark's. Used the way they use it: sparingly, on
+   * the one thing you are meant to act on. */
+  --accent: #0e9d84;
+  --accent-foreground: #ffffff;
+  /* The same teal, darkened for type. The site uses its accent on 15–21px
+   * links where 3.4:1 clears the large-text bar; we use it on 11–13px labels,
+   * where it does not. Fills, bars, rules and icons keep the bright one — this
+   * is only for glyphs. One step darker than it needs to be on white, because
+   * the tightest case is a chip sitting on the banner's own teal wash, where
+   * the lighter candidate measured 4.45 against a 4.5 bar. 6.0:1 on white,
+   * 5.5:1 on the ivory, 5.1:1 on the wash. */
+  --accent-text: #097059;
+
+  --muted: #f3f2ee;
+  --muted-foreground: #5a5e6b;
+
+  /* A tint of the text colour rather than a separate grey — the same
+   * trick, and it keeps every rule in the same temperature as the type.
+   * This is for INTERNAL dividers: rules between rows, separators inside a
+   * card. It is not strong enough to bound a component. */
+  --border: rgb(33 33 33 / 0.10);
+  --input: rgb(33 33 33 / 0.14);
+
+  /* Card and table BOUNDARIES need 3:1 against their surround — WCAG 2.1
+   * SC 1.4.11, and §19.1 claims AA. §10.5 also forbids decorative shadow, so
+   * the border is a card's only boundary affordance; a 1.4:1 hairline leaves
+   * the card floating. #a9afb4 measures ~2.9:1 on white and stays restrained.
+   * §10.3 records this value and its measured ratio. */
+  --structural-border: #a9afb4;
+
+  /* Focus must be visible ON the primary button, and the primary button is
+   * --accent. A ring in the same colour is invisible on the one control that
+   * matters most on every decision page (§19.1). Dark ring, white inner
+   * offset, legible on both the accent fill and the page ground. */
+  --ring: #111111;
+  --ring-offset: #ffffff;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  /* --- severity (independent of brand colour) ----------------------------- */
+  --sev-critical: #e11d48;       /* rose-600  · out of spec, lot mismatch     */
+  --sev-critical-bg: #fff1f2;
+  --sev-high: #d97706;           /* amber-600 · missing test, method mismatch */
+  --sev-high-bg: #fffbeb;
+  --sev-medium: #f59e0b;         /* amber-500 · date problems                 */
+  --sev-medium-bg: #fffbeb;
+  --sev-info: #5a5e6b;           /* the neutral grey · reported-not-in-spec   */
+  --sev-info-bg: #f5f4f0;
+
+  /* Text sitting ON the pale severity tints. The ramp colours above are tuned
+   * for glyphs on white, where they only need 3:1; as 11px text on their own
+   * tint they measure 3.1–4.3 and fail. */
+  --sev-critical-on-bg: #9f1239;
+  --sev-high-on-bg: #92400e;
+  --sev-medium-on-bg: #92400e;
+  --sev-info-on-bg: #43474f;
+
+  /* --- verdict ------------------------------------------------------------ */
+  /* Green, deliberately NOT the brand teal. They sat two hues apart before;
+   * now that the accent is teal, an emerald "pass" would read as a link or a
+   * button. Still low saturation — most rows pass, so it must stay quiet. */
+  --verdict-pass: #15803d;
+  --verdict-pass-bg: #f0fdf4;
+  --verdict-fail: #e11d48;
+  --verdict-fail-bg: #fff1f2;
+  --verdict-ambiguous: #7c3aed;  /* violet-600 — neither pass nor fail.       */
+  --verdict-ambiguous-bg: #f5f3ff;
+  --verdict-missing: #d97706;
+  --verdict-missing-bg: #fffbeb;
+
+  /* --- evidence ----------------------------------------------------------- */
+  /* Deliberately outside the verdict ramp so a highlight never reads as
+   * "this is the error" — it only means "this is where the value came from". */
+  --evidence-highlight: rgb(252 211 77 / 0.30);
+  --evidence-highlight-border: #f59e0b;
+
+  /* --- navigation rail ---------------------------------------------------- */
+  /* A dark rail separates "where am I" from "what am I working on" without
+   * spending any colour on the data itself. Contrast checked: body 10.6:1,
+   * section labels 5.7:1. */
+  --rail: #1c1c1c;
+  --rail-foreground: #b8b8b4;
+  --rail-muted: #8d8d88;
+  --rail-active: #ffffff;
+  --rail-active-bg: rgb(255 255 255 / 0.08);
+  /* Hover and selection on the dark rail are LIGHT chips with dark text, which
+   * reads far more clearly against navy than another shade of navy. */
+  --rail-hover: #f5f4f0;
+  --rail-selected: #ffffff;
+  --rail-border: #2e2e2e;
+  --rail-accent: #16c0a0;
+
+  /* --- analysis banner ---------------------------------------------------- */
+  /* One restrained wash, on the one panel that is machine-written. It reads as
+   * "this section is different" without any of the glow-and-sparkle vocabulary
+   * that would undercut a product whose whole pitch is that it does not guess. */
+  --ai-from: #dbf1ea;
+  --ai-via: #edf8f4;
+  --ai-to: #ffffff;
+  --ai-border: #c6e6dc;
+  /* Secondary text on the wash. The normal --muted-foreground measures 3.94:1
+   * against the darkest stop, which fails at 12px. */
+  --ai-muted: #3e5751;
+
+  /* Neutral hover tint. shadcn's outline/ghost variants hover on --accent,
+   * which here is a saturated CTA blue — they were filling solid blue. */
+  --hover-tint: #efeee9;
+
+  /* --- readiness ---------------------------------------------------------- */
+  --readiness-met: #15803d;
+  --readiness-pending: #5a5e6b;
+
+  /* --- tenant ------------------------------------------------------------- */
+  /* The tenant's colour, not the product's, and the distinction is the whole
+   * point of having two. `--accent` above belongs to the application and
+   * carries every CTA; this one stands in for whichever customer the instance
+   * is deployed for, and carries the tenant chip, the engineering line art on
+   * the assembly sheet, and the configuration matrix.
+   *
+   * Set it to the deploying customer's brand colour. A product that adopts its
+   * customer's palette wholesale stops looking like something they bought and
+   * starts looking like something they built — so it is scoped to those three
+   * surfaces and nothing else. */
+  --tenant-accent: #1f5fbf;
+  --tenant-accent-hover: #174b99;
+  --tenant-accent-tint: #eff4fc;
+  /* Darkened for glyphs at or below 13px: the tenant fill on white is 8.6:1
+   * but the thin strokes of small type need the extra weight. */
+  --tenant-accent-text: #174b99;
+
+  /* --- engineering sheet -------------------------------------------------- */
+  /* The exploded assembly view (§11.8) is a drawing, not a chart. These are the
+   * only places raw stroke colours are declared; the component reads them so a
+   * theme change reaches the sheet. Status pairs colour with a dash pattern —
+   * §11.8 requires the sheet to survive grayscale and print. */
+  --sheet-line: #60738f;         /* normal — blue-grey engineering stroke */
+  --sheet-shortage: #b42318;     /* solid emphasis + "Shortage" label */
+  --sheet-substitute: #9a6700;   /* dashed 8 5 + "Proposed substitute" */
+  --sheet-blocked: #334155;      /* dense dash 3 3 + "Blocked" */
+  --sheet-selected: #dbeafe;     /* halo. Selection, never operational status. */
+  --sheet-centerline: #91a1b8;
+  --sheet-surface: #ffffff;
+  --sheet-surround: #f2f5f8;
+
+  /* --- geometry ----------------------------------------------------------- */
+  /* Soft. Reversed from the original 2px on direct instruction, after a
+   * side-by-side against another build: square corners read as harsh next to a
+   * rounded one, and the comparison is what the room will actually make.
+   *
+   * §10.3 and §10.5 asked for 2px throughout on the reasoning that the tenant's
+   * own site is square. That reasoning held until someone looked at both.
+   *
+   * The ladder is explicit values, NOT calc offsets from --radius. The old
+   * `calc(var(--radius) - 6px)` evaluated to a negative length at small radii,
+   * which is invalid, so the declaration was dropped and every `rounded-xs` in
+   * the app silently lost its corner — a failure invisible in review. */
+  --radius: 22px;
+  --row-height: 44px;            /* table density, §19.3 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-text: var(--accent-text);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-sev-critical: var(--sev-critical);
+  --color-sev-critical-bg: var(--sev-critical-bg);
+  --color-sev-high: var(--sev-high);
+  --color-sev-high-bg: var(--sev-high-bg);
+  --color-sev-medium: var(--sev-medium);
+  --color-sev-medium-bg: var(--sev-medium-bg);
+  --color-sev-info: var(--sev-info);
+  --color-sev-info-bg: var(--sev-info-bg);
+  --color-sev-critical-on-bg: var(--sev-critical-on-bg);
+  --color-sev-high-on-bg: var(--sev-high-on-bg);
+  --color-sev-medium-on-bg: var(--sev-medium-on-bg);
+  --color-sev-info-on-bg: var(--sev-info-on-bg);
+
+  --color-verdict-pass: var(--verdict-pass);
+  --color-verdict-pass-bg: var(--verdict-pass-bg);
+  --color-verdict-fail: var(--verdict-fail);
+  --color-verdict-fail-bg: var(--verdict-fail-bg);
+  --color-verdict-ambiguous: var(--verdict-ambiguous);
+  --color-verdict-ambiguous-bg: var(--verdict-ambiguous-bg);
+  --color-ai-from: var(--ai-from);
+  --color-ai-via: var(--ai-via);
+  --color-ai-to: var(--ai-to);
+  --color-ai-border: var(--ai-border);
+  --color-ai-muted: var(--ai-muted);
+  --color-hover-tint: var(--hover-tint);
+
+  --color-rail: var(--rail);
+  --color-rail-foreground: var(--rail-foreground);
+  --color-rail-muted: var(--rail-muted);
+  --color-rail-active: var(--rail-active);
+  --color-rail-active-bg: var(--rail-active-bg);
+  --color-rail-hover: var(--rail-hover);
+  --color-rail-selected: var(--rail-selected);
+  --color-rail-border: var(--rail-border);
+  --color-rail-accent: var(--rail-accent);
+
+  --color-verdict-missing: var(--verdict-missing);
+  --color-verdict-missing-bg: var(--verdict-missing-bg);
+
+  --color-evidence-highlight: var(--evidence-highlight);
+  --color-evidence-highlight-border: var(--evidence-highlight-border);
+
+  --color-structural-border: var(--structural-border);
+  --color-ring-offset: var(--ring-offset);
+
+  --color-tenant-accent: var(--tenant-accent);
+  --color-tenant-accent-hover: var(--tenant-accent-hover);
+  --color-tenant-accent-tint: var(--tenant-accent-tint);
+  --color-tenant-accent-text: var(--tenant-accent-text);
+
+  --color-sheet-line: var(--sheet-line);
+  --color-sheet-shortage: var(--sheet-shortage);
+  --color-sheet-substitute: var(--sheet-substitute);
+  --color-sheet-blocked: var(--sheet-blocked);
+  --color-sheet-selected: var(--sheet-selected);
+  --color-sheet-centerline: var(--sheet-centerline);
+  --color-sheet-surface: var(--sheet-surface);
+  --color-sheet-surround: var(--sheet-surround);
+
+  /* --- ported-component compatibility ------------------------------------- */
+  /* A second vocabulary for the same values.
+   *
+   * Components brought in from elsewhere often carry an older token naming —
+   * `ink`, `mute`, `divider` — and rewriting their classes on the way in is the
+   * expensive, lossy option: it touches every line of code you did not write,
+   * invites diff noise on code you cannot review properly, and makes the next
+   * one start from zero again.
+   *
+   * Declaring those names as aliases of ours means such a component drops in
+   * unmodified. */
+  --color-ink: var(--foreground);
+  --color-mute: var(--muted-foreground);
+  --color-divider: var(--border);
+  --color-surface-fog: var(--muted);
+  --color-surface-mint: var(--ai-from);
+  --color-accent-green: var(--accent);
+  --color-accent-green-deep: var(--accent-text);
+  --color-mark-red: var(--sev-critical);
+  --color-pos: var(--verdict-pass);
+  --color-pos-soft: var(--verdict-pass-bg);
+  --color-neg: var(--sev-critical);
+  --color-neg-soft: var(--sev-critical-bg);
+
+  /* Explicit, not derived — see the note on --radius.
+   *
+   * A real ladder now, because one value cannot serve both a 20px status chip
+   * and a 400px panel: the radius that reads as soft on a card reads as a
+   * lozenge on a chip. Corner radius tracks the size of the thing it is on.
+   *
+   *   xs   chips, badges, status dots, table cell affordances
+   *   sm   inputs, small controls
+   *   md   buttons, select fields, toolbar controls
+   *   lg   cards and panels — the default for anything with its own border
+   *   xl   hero surfaces and drawers */
+  --radius-xs: 9px;
+  --radius-sm: 11px;
+  --radius-md: 13px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  /* The one exception, and it is a shape rather than a radius. */
+  --radius-full: 9999px;
+
+  /* Three faces. Space Grotesk carries headings and figures —
+   * it is the voice; Inter carries the interface, where it beats Grotesk badly
+   * at 11px in a dense table; JetBrains Mono stays reserved for values quoted
+   * verbatim from a source document (plan §13.2). */
+  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --text-2xs: 0.6875rem;  /* 11px — badges only */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.8125rem;   /* 13px — table body */
+  --text-base: 0.875rem;  /* 14px — body */
+  --text-lg: 1rem;        /* 16px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+}
