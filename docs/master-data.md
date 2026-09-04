@@ -1,88 +1,26 @@
-# One dataset, derived everywhere
+# Master data and derived figures
 
-Every figure on every screen comes from one authored dataset. No component
-computes a number of its own, and no value is typed in two places.
+Every figure on every screen is derived from one record set. Nothing is typed twice; if a number cannot be traced to the files below, it does not exist.
 
-This is the rule the rest of the build hangs off, so it is worth being precise
-about what it forbids. It is not "keep the numbers consistent". It is: there is
-exactly one place a fact is stated, and everything else is a function of it.
+## The record set (`src/fixtures/`)
 
-## Why it matters more here than usual
+| File | What it holds |
+|---|---|
+| `network.ts` | 5 terminals (real Canadian cement sites, with coordinates), 11 ship-to sites, 10 customers (fictional), 12 carriers (8 with a connected system, 4 portal-only) with contract rates per lane, ~30 trucks with drivers |
+| `people.ts` | Users by initials only (service desk RW, EC, JFH, CB; administrator; stakeholders; one carrier portal account), access tickets, security defaults, default notification rules |
+| `orders.ts` | ~60 open orders across all eleven statuses, authored relative to the moment the app starts (`ago()` / `ahead()`), plus ~120 delivered orders over 90 days from a seeded generator; carrier requests; deviations; proofs of delivery |
+| `chain.ts` | Lane table (terminal per ship-to), dwell time per status, event chain expansion |
+| `derive.ts` | Everything the screens read: worklist rows, order detail, documents, KPIs, yard and dispatch boards, history, on-time result |
+| `recommend.ts` | The carrier recommender: 30 lane · 25 reliability · 20 rate · 15 capacity · 10 distance, top three with reasons |
+| `analytics.ts` | Scorecard, benchmark series, workload heatmap, report builder, live figures |
+| `documents.ts` | The document models: order confirmation, bill of lading (scale ticket, seal), signed copy, delivery record, tax invoice (list prices per product, sales tax by province) |
+| `calendar.ts` | Today as an anchor; dates are offsets, never literals |
 
-The screens deliberately quote each other. The command centre says five parts
-need a decision; the order screen says five components are short; the assembly
-sheet draws five stations in shortage; the requisition explains why eight lines
-follow from those five. Those are not four numbers that happen to agree — they
-are one number, seen four ways.
+## Rules
 
-Get that wrong and the failure is not cosmetic. Anyone comparing two screens
-finds the contradiction in about a minute, and from then on every other figure
-is suspect.
-
-## The four seams
-
-```
-  fixtures/          authored records — the only place a fact is stated
-      │
-      ▼
-  fixtures/derive.ts roll-ups, projections, status, netting
-      │
-      ▼
-  services/          the typed contract, and a mock that implements it
-      │
-      ▼
-  routes/ components read-only. They render; they never compute.
-```
-
-**Authored records** (`src/fixtures/`) are parts, structures, stock, orders,
-suppliers and evidence. A number appears here or it does not exist.
-
-**Derivations** (`src/fixtures/derive.ts`) turn records into everything else:
-available quantity, projected zero date, coverage days, status, order explosion,
-readiness, the requisition set, orders protected. If a screen needs a figure, it
-belongs here, not in the component.
-
-**The contract** (`src/services/contracts/`) is the API surface as TypeScript
-interfaces. Components import `api` and never touch fixtures, so swapping the
-mock for HTTP is a single-file change.
-
-**Components** render. A component that computes a total is a bug, because that
-total now exists in two places and only one of them is under test.
-
-## Dates
-
-Authored as offsets from one anchor and resolved against today at read time, so
-the whole dataset slides forward and every relative relationship survives: a
-21-day uncovered window stays 21 days a year later. The build refuses a literal
-date anywhere in `src/fixtures` outside `calendar.ts`.
-
-## The gate
-
-`scripts/check-fixture-invariants.mts` runs before the type-check on every
-build. It fails the build; it does not warn.
-
-1. **Retired vocabulary** — one word per concept, enforced by grep. Synonyms
-   drift back in through copy edits otherwise.
-2. **Hardcoded system-of-record name** — the ERP is configuration, not code, so
-   its display name may not appear outside the connector profile.
-3. **Literal dates in fixtures** — see above.
-4. **Cross-screen invariants** — every figure that appears on more than one
-   screen, re-derived from the records and compared against its declared value.
-5. **Referential integrity** — every foreign key resolves. In some domains a
-   dangling reference is the subject matter; here it is a bug.
-6. **Subset arithmetic** — no group may report a count greater than the whole
-   that contains it. A supplier group protecting more orders than the
-   requisition containing it is the most visible arithmetic error this kind of
-   screen can make.
-
-## Authored versus computed
-
-Where an *input* is fixed — a unit cost, a lead time, a supplier's quoted days —
-it is authored, once. Everything downstream of it is computed. When an authored
-input and a computed figure disagree, the computed one is right and the authored
-one is the bug.
-
-The cheapest way to see the rule working is to break it: change one stock level
-in `src/fixtures/inventory.ts` and run `npm run build`. Several invariants fail
-at once, in different files, because they are all functions of the value you
-changed.
+1. **Events are the truth.** An order's status is its last event. Timelines, arrival estimates, hours per stage, scorecard and reports all read the same chain.
+2. **Steps the client's systems own arrive as events.** Order number returned, bill of lading printed at the scale, payment released, invoice issued: recorded with the source system, never re-implemented.
+3. **Seeds change only with a version bump.** Edit a fixture, bump `SEED_VERSION` in `src/services/mock/store.ts`, or every open browser keeps the old data.
+4. **Ids and references are unique.** The build gate fails on a duplicate order id or ERP reference.
+5. **No real identity.** Client name, ticker, people: a salted hash denylist in `scripts/check-no-identity.mts` fails the build if one appears. Terminal names are real sites by agreement; everything else is fictional.
+6. **Retired words.** Terminal (not plant), ePOD (not POD), Order/Load (not shipment), Truck (not vehicle); system names only from `src/app/product.ts`.

@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
  * §10.6 and §19.1 both say the same thing from different angles: colour is
  * never the only signal. Every severity here carries a distinct glyph and a
  * word, and the colour is the third channel rather than the first. That is not
- * only an accessibility rule — an exploded sheet or an audit pack that gets
+ * only an accessibility rule — a printed bill of lading or an audit pack that gets
  * printed loses the colour and keeps the meaning.
  */
 

@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils'
 export function SourceCaveat({
   connectorId, consequence, className,
 }: {
-  /** Matches a connector id in §16.3's list — `bom` or `counts` here. */
+  /** Matches a connector id from the integrations page — `erp-sync` or `edi` here. */
   connectorId: string
   /** What the absence means for the numbers on *this* page, in the planner's terms. */
   consequence: string

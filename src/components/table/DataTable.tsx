@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
  *
  * ## Windowing
  *
- * The inventory list is nineteen hundred positions. Rendered whole that is
+ * The event log runs to several hundred rows. Rendered whole that is
  * thirty-one thousand DOM nodes, and clicking a filter took two seconds to
  * settle — which in a live walk-through does not read as "a large dataset", it
  * reads as "the product is slow".
@@ -31,7 +31,7 @@ import { cn } from '@/lib/utils'
  * ## Pinning
  *
  * §19.3 is unforgiving about this. At the 1280px functional minimum the rail
- * leaves about 1,048px of content, the replenishment table declares fourteen
+ * leaves about 1,048px of content, the worklist declares a dozen
  * columns, and a 500px drawer can open over the same region — so the identity
  * column and the status column have to stay put while the rest scrolls. The
  * scroll is contained; the page body never moves sideways.

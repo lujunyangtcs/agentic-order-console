@@ -79,7 +79,7 @@ if (failures.length) {
   for (const f of failures) console.error('  ' + f)
   console.error(
     '\nThis repository ships externally. Replace the name at each position\n' +
-    'with a placeholder — ABC, Plant A, Supplier B, ABC-1001.\n',
+    'with a placeholder — ABC, Terminal A, Carrier B, ABC-1001.\n',
   )
   process.exit(1)
 }

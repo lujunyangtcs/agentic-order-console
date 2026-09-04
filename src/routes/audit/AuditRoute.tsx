@@ -11,7 +11,7 @@ import { useLang } from '@/i18n'
  * What was decided, by whom, and against what.
  *
  * Entries exist because something happened, not because the fixture seeded
- * them — write back the requisition set and three more rows appear with the
+ * them — send a carrier request and three more rows appear with the
  * references the system of record returned. An audit log that is populated in
  * advance is a screenshot, and the one persona in the room whose job is to
  * doubt the integration will check exactly this.

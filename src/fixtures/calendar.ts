@@ -5,7 +5,7 @@
  *
  * A demo whose dates are literals expires. Not loudly — it keeps working, and
  * then one day the "urgent" order is three months overdue, the "confirmed
- * yesterday" supplier email is from last quarter, and the presenter finds out
+ * yesterday" carrier request is from last quarter, and the presenter finds out
  * in the room. Literal dates and a hardcoded "now" are what cause that: the
  * dataset stays pinned to the day it was written while `relativeAge()` reads
  * the real clock, and the two disagree a little more every day.

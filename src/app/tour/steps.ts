@@ -1,14 +1,11 @@
 /**
  * The guided walk.
  *
- * Scaffold: the overlay machinery is kept because the walkthrough is a scripted
- * 10–12 minute click path and this is its natural carrier, but the previous
- * steps are gone. This is filled with the walkthrough beats — Command Center, order
- * impact, Assembly Exposure, part resolution, requisition, write-back, then
- * flow 2 and the analytics breadth.
- *
- * `TourInvite` is disabled in `AppShell` until then, so an empty script is
- * never offered to a viewer.
+ * The overlay machinery is kept because the demo is a scripted click path and
+ * this is its natural carrier. The steps themselves are not authored yet; the
+ * presenter's script lives in `docs/demo-script.md` (T1 order to delivery, T3
+ * rejection and reassignment). `TourInvite` stays disabled in `AppShell` until
+ * steps exist, so an empty walk is never offered to a viewer.
  */
 
 /**
