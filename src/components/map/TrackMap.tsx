@@ -44,12 +44,21 @@ export interface TrackMapProps {
   forceSvg?: boolean
 }
 
-/* Esri's light grey canvas: no API key, attribution only. CARTO's free
-   basemaps started stamping "API key required" on every tile. */
-const TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-/* The matching reference layer: place names, roads and borders drawn over the grey base. */
-const LABELS = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
-const ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+/* Two basemaps. CARTO's light style is the one the presenter prefers; its free
+   tiles now carry an "API key required" stamp, which Kyle accepted on
+   2026-09-04. `?map=esri` at load switches to Esri's grey canvas with its
+   reference layer (place names, roads, borders), which needs no key. */
+const BASEMAPS = {
+  carto: { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', labels: null as string | null, attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd' },
+  esri: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', labels: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}' as string | null, attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ', subdomains: 'abc' },
+} as const
+const BASEMAP = (() => {
+  try {
+    return new URLSearchParams(location.search).get('map') === 'esri' ? BASEMAPS.esri : BASEMAPS.carto
+  } catch {
+    return BASEMAPS.carto
+  }
+})()
 
 function icon(kind: 'terminal' | 'site' | 'truck', label?: string, active?: boolean) {
   const cls = kind === 'terminal' ? 'map-pin map-pin--terminal' : kind === 'site' ? 'map-pin map-pin--site' : cn('map-pin map-pin--truck', active && 'map-pin--active')
@@ -130,8 +139,8 @@ export function TrackMap({ terminals, sites, routes, focusOrderId, onSelect, cla
   return (
     <div data-map="leaflet" className={cn('relative h-full min-h-[320px] w-full overflow-hidden rounded-lg', className)}>
       <MapContainer key="track-map" center={[52, -96]} zoom={4} scrollWheelZoom={false} className="h-full w-full" attributionControl>
-        <TileLayer url={TILES} attribution={ATTRIBUTION} maxNativeZoom={16} eventHandlers={{ tileerror: () => setTileErrors((n) => n + 1) }} />
-        <TileLayer url={LABELS} zIndex={2} maxNativeZoom={16} />
+        <TileLayer url={BASEMAP.url} attribution={BASEMAP.attribution} subdomains={BASEMAP.subdomains} maxNativeZoom={16} eventHandlers={{ tileerror: () => setTileErrors((n) => n + 1) }} />
+        {BASEMAP.labels && <TileLayer url={BASEMAP.labels} zIndex={2} maxNativeZoom={16} />}
         <FitBounds points={points} fitKey={fitKey} />
         {routes.map((r) => (
           <Polyline

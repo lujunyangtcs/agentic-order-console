@@ -33,7 +33,7 @@ Two AI touchpoints only, both human-confirmed and both rendered through a gated 
 | `/worklist` | Service desk | Today's band, four figures, three observations, the order table with status filters |
 | `/orders/:id` | everyone | One order page, role-conditional: eleven-step status stepper, readiness, map and arrival, timeline, documents, requests, deviations, next-step card |
 | `/requests` `/exceptions` | Service desk | Carrier requests (remind · expedite · reassign) · everything off the happy path |
-| `/track` | desk, customer, stakeholders | Live map of every truck (Leaflet, Esri light grey tiles; schematic fallback offline) |
+| `/track` | desk, customer, stakeholders | Live map of every truck (Leaflet, CARTO light tiles; `?map=esri` for the key-free Esri canvas; schematic fallback offline) |
 | `/carrier/inbox` `/carrier/loads` | Carrier | Accept with a truck or decline with a reason · tap statuses through, upload the signed bill of lading |
 | `/portal` `/history` `/epod/:id` | Customer (and others) | My orders and one button to request more · completed orders with documents · the signed bill of lading as a document |
 | `/stakeholder` `/yard` `/dispatch` | Other Stakeholder | Four role views with their own figures and columns · loading bays and the bill-of-lading ceremony · loads by carrier with reassignment |
