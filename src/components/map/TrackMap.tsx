@@ -47,6 +47,8 @@ export interface TrackMapProps {
 /* Esri's light grey canvas: no API key, attribution only. CARTO's free
    basemaps started stamping "API key required" on every tile. */
 const TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+/* The matching reference layer: place names, roads and borders drawn over the grey base. */
+const LABELS = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
 const ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
 
 function icon(kind: 'terminal' | 'site' | 'truck', label?: string, active?: boolean) {
@@ -66,7 +68,7 @@ function FitBounds({ points, fitKey }: { points: LatLng[]; fitKey: string }) {
     if (!points.length || done.current === fitKey) return
     done.current = fitKey
     const b = L.latLngBounds(points.map((p) => L.latLng(p[0], p[1])))
-    map.fitBounds(b.pad(0.25), { animate: false, maxZoom: 10 })
+    map.fitBounds(b.pad(0.25), { animate: false, maxZoom: 11 })
     // The map may already be gone when this fires (route change, StrictMode
     // remount); sizing a removed map throws inside Leaflet.
     const id = window.setTimeout(() => { if (map.getContainer()?.isConnected) map.invalidateSize() }, 50)
@@ -128,7 +130,8 @@ export function TrackMap({ terminals, sites, routes, focusOrderId, onSelect, cla
   return (
     <div data-map="leaflet" className={cn('relative h-full min-h-[320px] w-full overflow-hidden rounded-lg', className)}>
       <MapContainer key="track-map" center={[52, -96]} zoom={4} scrollWheelZoom={false} className="h-full w-full" attributionControl>
-        <TileLayer url={TILES} attribution={ATTRIBUTION} subdomains="abcd" eventHandlers={{ tileerror: () => setTileErrors((n) => n + 1) }} />
+        <TileLayer url={TILES} attribution={ATTRIBUTION} maxNativeZoom={16} eventHandlers={{ tileerror: () => setTileErrors((n) => n + 1) }} />
+        <TileLayer url={LABELS} zIndex={2} maxNativeZoom={16} />
         <FitBounds points={points} fitKey={fitKey} />
         {routes.map((r) => (
           <Polyline
