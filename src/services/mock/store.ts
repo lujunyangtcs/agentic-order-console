@@ -28,7 +28,7 @@ import type { AuditEntry, ReportSpec } from '../contracts'
  */
 
 /** Bump on every change to the shape or content of the seeded fixture. */
-export const SEED_VERSION = 1
+export const SEED_VERSION = 2
 
 const KEY = `aoc.store.v${SEED_VERSION}`
 const CHANNEL = 'aoc-store'

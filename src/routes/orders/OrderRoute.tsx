@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
+import { TrackMap } from '@/components/map/TrackMap'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { ArrowRight, Bell, Check, CircleAlert, Download, FileText, Lock, Send, Zap } from 'lucide-react'
@@ -14,13 +15,16 @@ import { StatusStepper } from '@/components/status/StatusStepper'
 import { GatedReveal } from '@/components/ai/GatedReveal'
 import { AssignCarrierDrawer } from '@/components/orders/AssignCarrierDrawer'
 import { SendToErpDialog } from '@/components/orders/SendToErpDialog'
+import { UploadBolDialog } from '@/components/pod/UploadBolDialog'
+import { SignDeliveryDialog } from '@/components/pod/SignDeliveryDialog'
+import { DeviationDialog } from '@/components/pod/DeviationDialog'
 import { useAuth } from '@/app/auth'
 import { useActor } from '@/app/useActor'
 import { SYSTEMS } from '@/app/product'
 import { ORDER_STATUSES, PRIORITIES, statusIndex, nextStatus, type OrderStatus, type Priority, type StatusEvent } from '@/types/domain'
 import { formatDateTime, formatTime, formatDate } from '@/fixtures/calendar'
 import { relativeAge } from '@/lib/format'
-import { priorityKey, productKey, statusKey, useLang } from '@/i18n'
+import { priorityKey, productKey, statusKey, useLang, type I18nKey } from '@/i18n'
 import { cn } from '@/lib/utils'
 
 /**
@@ -39,6 +43,9 @@ export function OrderRoute() {
   const qc = useQueryClient()
   const [assignOpen, setAssignOpen] = useState(false)
   const [erpOpen, setErpOpen] = useState(false)
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [signOpen, setSignOpen] = useState(false)
+  const [deviationOpen, setDeviationOpen] = useState(false)
 
   const detail = useQuery({ queryKey: ['order', orderId], queryFn: () => api.orders.detail(orderId) })
   const d = detail.data ?? null
@@ -118,6 +125,7 @@ export function OrderRoute() {
       return { title: t('order.next.watch'), body: t('order.next.watchBody'), action: null }
     }
     if (isOwnCarrier && actionable.length) return { title: t('order.next.carrier'), body: t('order.next.carrierBody'), action: null }
+    if (isOwnCarrier && statusIndex(status) >= statusIndex('unload_completed') && !d.pod) return { title: t('loads.uploadBol'), body: t('loads.upload.desc'), action: 'upload' as const }
     if (role === 'Customer' && statusIndex(status) >= statusIndex('on_site')) return { title: t('order.next.sign'), body: t('order.next.signBody'), action: 'sign' as const }
     return { title: t('order.next.watch'), body: t('order.next.watchBody'), action: null }
   })()
@@ -186,6 +194,24 @@ export function OrderRoute() {
           </section>
         </div>
 
+        {!d.isRequest && statusIndex(status) >= statusIndex('order_scheduled') && status !== 'delivery_completed' && (
+          <section data-card="tracking" className="border-structural-border bg-surface flex flex-col rounded-lg border">
+            <header className="border-border flex items-baseline justify-between border-b px-5 py-3.5">
+              <h2 className="text-sm font-semibold">{t('order.tracking')}</h2>
+              <Link to={`/track?order=${d.id}`} className="text-accent-text text-xs font-medium hover:underline">{t('nav.track')} →</Link>
+            </header>
+            <div className="p-2">
+              <TrackMap
+                terminals={[d.lane.terminal]}
+                sites={[d.lane.shipTo]}
+                routes={[{ orderId: d.id, erpRef: d.erpRef, path: d.lane.path, progress: d.etaDetail?.progress ?? (statusIndex(status) >= statusIndex('on_site') ? 1 : 0), status, carrierName: d.carrierName ?? '—', customerName: d.customerName, eta: d.eta, atTerminal: statusIndex(status) < statusIndex('in_transit') }]}
+                focusOrderId={d.id}
+                className="h-[300px]"
+              />
+            </div>
+          </section>
+        )}
+
         {!d.isRequest && (
           <section className="flex flex-col gap-3">
             <div className="flex items-baseline justify-between">
@@ -240,7 +266,7 @@ export function OrderRoute() {
                 <li key={dv.id} className="flex items-start gap-3 px-5 py-2.5 text-xs">
                   <CircleAlert className="text-sev-high mt-0.5 size-3.5 shrink-0" aria-hidden />
                   <span className="min-w-0 flex-1">
-                    <span className="block font-medium capitalize">{dv.kind.replace(/_/g, ' ')}{dv.qtyDelta ? ` (${dv.qtyDelta > 0 ? '+' : ''}${dv.qtyDelta} t)` : ''}</span>
+                    <span className="block font-medium">{t(`deviation.kind.${dv.kind}` as I18nKey)}{dv.qtyDelta ? ` (${dv.qtyDelta > 0 ? '+' : ''}${dv.qtyDelta} t)` : ''}</span>
                     <span className="text-muted-foreground block text-2xs">{dv.note} · {dv.filedBy} · {formatDateTime(dv.filedAt, lang)}</span>
                   </span>
                   <span className="bg-muted text-muted-foreground shrink-0 rounded-xs px-2 py-0.5 text-2xs capitalize">{dv.state}</span>
@@ -269,6 +295,28 @@ export function OrderRoute() {
               <Button size="sm" className="mt-4 w-full" data-variant="primary" onClick={() => setErpOpen(true)} data-action="erp">
                 {t('order.action.erp', { orders: SYSTEMS.orders })}
                 <ArrowRight className="size-3.5" aria-hidden />
+              </Button>
+            </PermissionGate>
+          )}
+          {handoff.action === 'upload' && (
+            <Button size="sm" className="mt-4 w-full" data-variant="primary" onClick={() => setUploadOpen(true)} data-action="upload">
+              {t('loads.uploadBol')}
+              <ArrowRight className="size-3.5" aria-hidden />
+            </Button>
+          )}
+          {handoff.action === 'sign' && (
+            <PermissionGate capability="pod.sign" className="mt-4">
+              <Button size="sm" className="mt-4 w-full" data-variant="primary" onClick={() => setSignOpen(true)} data-action="sign">
+                {t('order.action.sign')}
+                <ArrowRight className="size-3.5" aria-hidden />
+              </Button>
+            </PermissionGate>
+          )}
+          {statusIndex(status) >= statusIndex('on_site') && !d.isRequest && (
+            <PermissionGate capability="deviation.file" className="mt-2">
+              <Button size="sm" variant="outline" className="mt-2 w-full" onClick={() => setDeviationOpen(true)} data-action="report">
+                <CircleAlert className="size-3.5" aria-hidden />
+                {t('order.action.report')}
               </Button>
             </PermissionGate>
           )}
@@ -337,6 +385,9 @@ export function OrderRoute() {
 
       <AssignCarrierDrawer orderId={d.id} open={assignOpen} onOpenChange={setAssignOpen} terminalName={d.terminalName} city={d.shipToCity} />
       <SendToErpDialog orderId={d.id} open={erpOpen} onOpenChange={setErpOpen} terminalName={d.terminalName} />
+      <UploadBolDialog order={uploadOpen ? d : null} onOpenChange={(o) => !o && setUploadOpen(false)} />
+      <SignDeliveryDialog order={d} open={signOpen} onOpenChange={setSignOpen} defaultName={session?.role === 'Customer' ? d.customerContact : session?.name ?? ''} />
+      <DeviationDialog orderId={d.id} open={deviationOpen} onOpenChange={setDeviationOpen} />
     </div>
   )
 }
@@ -365,9 +416,15 @@ function DocumentRow({ doc, order }: { doc: OrderDocument; order: OrderDetail })
         <span className="text-muted-foreground block text-2xs">{doc.source} · {formatDateTime(doc.issuedAt, lang)}</span>
       </span>
       <span className="text-muted-foreground shrink-0 font-mono text-2xs">{doc.reference}</span>
-      <Button size="sm" variant="ghost" className="shrink-0" onClick={download} aria-label={t('common.download')} data-download={doc.kind}>
-        <Download className="size-3.5" aria-hidden />
-      </Button>
+      {doc.kind === 'signed_bol' ? (
+        <Button asChild size="sm" variant="outline" className="shrink-0" data-open-epod>
+          <Link to={`/epod/${order.id}`}>{t('common.open')}</Link>
+        </Button>
+      ) : (
+        <Button size="sm" variant="ghost" className="shrink-0" onClick={download} aria-label={t('common.download')} data-download={doc.kind}>
+          <Download className="size-3.5" aria-hidden />
+        </Button>
+      )}
     </li>
   )
 }

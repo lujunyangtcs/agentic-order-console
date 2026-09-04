@@ -72,6 +72,17 @@
 }
 
 @layer components {
+  /* Map pins, drawn in the house tokens. Leaflet's default raster icons do
+     not survive Vite's asset pipeline, so every marker is a divIcon. */
+  .map-pin-wrap { background: none; border: 0; }
+  .map-pin { display: inline-flex; align-items: center; gap: 4px; }
+  .map-pin--terminal { width: 10px; height: 10px; background: var(--map-terminal); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--map-terminal); }
+  .map-pin--site { width: 10px; height: 10px; border-radius: 9999px; background: var(--map-site); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--map-site); }
+  .map-pin--truck { height: 22px; padding: 0 8px; border-radius: 11px; background: var(--map-truck); color: #fff; font: 500 11px/1 var(--font-mono); white-space: nowrap; box-shadow: 0 1px 4px rgb(0 0 0 / 0.25); }
+  .map-pin--active { background: var(--accent); }
+  .leaflet-container { font-family: var(--font-sans); z-index: 0; }
+  .leaflet-popup-content-wrapper { border-radius: var(--radius-md); }
+
   /* Cards answer the pointer.
    *
    * A dashboard where nothing responds to the mouse reads as a picture of an

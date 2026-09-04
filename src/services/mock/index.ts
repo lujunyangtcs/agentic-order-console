@@ -217,6 +217,7 @@ export const mockApi: Api = {
           ...row,
           shipToId: draft.shipToId,
           shipToAddress: `${shipTo.name}, ${shipTo.city}, ${shipTo.province}`,
+          customerContact: CUSTOMER_BY_ID[draft.customerId].contact,
           truck: null,
           events: [],
           requests: [],

@@ -92,6 +92,7 @@ export interface Lane {
 export interface OrderDetail extends WorklistRow {
   shipToId: string
   shipToAddress: string
+  customerContact: string
   truck: { id: string; plate: string; driver: string } | null
   events: StatusEvent[]
   requests: (CarrierRequest & { carrierName: string })[]
@@ -251,6 +252,8 @@ export interface DispatchColumn {
     erpRef: string
     status: OrderStatus
     customerName: string
+    terminalName: string
+    shipToCity: string
     windowEnd: string
     stalled: boolean
   }[]

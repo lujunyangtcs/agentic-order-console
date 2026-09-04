@@ -8,7 +8,7 @@ import type {
 } from '@/services/contracts'
 import type { MockState } from '@/services/mock/store'
 import { ORDERS, SEED_REQUESTS, SEED_DEVIATIONS, SEED_PODS, LOCKED_ORDER, LOCKED_BY } from './orders'
-import { eventChain, laneOf, projectedAt, minutesInto } from './chain'
+import { eventChain, laneOf, projectedAt, minutesInto, terminalFor } from './chain'
 import { interpolate, travelMinutes } from './geo'
 import { CARRIER_BY_ID, CUSTOMER_BY_ID, SHIP_TO_BY_ID, TERMINAL_BY_ID, TRUCK_BY_ID, CARRIERS } from './network'
 import { USER_BY_ID } from './people'
@@ -294,7 +294,7 @@ export function draftRows(state: MockState): WorklistRow[] {
 }
 
 function laneTerminal(shipToId: string): string {
-  return laneOf({ terminalId: '', shipToId } as Order).terminal.id
+  return terminalFor(shipToId)
 }
 
 /** The open book: every order that has not reached delivery, plus today's
@@ -368,6 +368,7 @@ export function detailOf(order: Order, state: MockState): OrderDetail {
     ...row,
     shipToId: order.shipToId,
     shipToAddress: `${shipTo.name}, ${shipTo.city}, ${shipTo.province}`,
+    customerContact: CUSTOMER_BY_ID[order.customerId].contact,
     truck: truck ? { id: truck.id, plate: truck.plate, driver: truck.driver } : null,
     events: eventsOf(order, state),
     requests: requestsOf(order.id, state).map((r) => ({ ...r, carrierName: CARRIER_BY_ID[r.carrierId].name })),
@@ -489,6 +490,8 @@ export function dispatchColumns(state: MockState): DispatchColumn[] {
         erpRef: o.erpRef,
         status,
         customerName: CUSTOMER_BY_ID[o.customerId].name,
+        terminalName: TERMINAL_BY_ID[o.terminalId].name,
+        shipToCity: SHIP_TO_BY_ID[o.shipToId].city,
         windowEnd: o.window.end,
         stalled: !!req && now - Date.parse(req.sentAt) > 45 * 60_000,
       }))

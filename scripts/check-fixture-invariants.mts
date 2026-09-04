@@ -18,6 +18,7 @@
  */
 
 import { CONNECTOR_PROFILE } from '../src/app/product'
+import { ORDERS } from '../src/fixtures/orders'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, extname } from 'node:path'
 
@@ -118,7 +119,10 @@ function expect(label: string, actual: number, want: number) {
     inv.push({ file: 'src/fixtures', line: 0, detail: `${label}: derived ${actual}, expected ${want}` })
   }
 }
-void expect
+// Every order is one order: a shared id would hand one order's proof of
+// delivery to another.
+expect('unique order ids', new Set(ORDERS.map((o) => o.id)).size, ORDERS.length)
+expect('unique ERP references', new Set(ORDERS.map((o) => o.erpRef)).size, ORDERS.length)
 
 failures.push(...inv)
 

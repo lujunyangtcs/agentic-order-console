@@ -1,11 +1,12 @@
-import { createContext, use, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { use, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { en, type I18nKey } from './en'
 import { fr } from './fr'
 import type { OrderStatus, Priority, Product, Role, StakeholderKind } from '@/types/domain'
 import { ROLE_SLUG } from '@/app/permissions'
 
-export type Lang = 'en' | 'fr'
-export type { I18nKey }
+import { LangContext, type Lang, type LangValue } from './context'
+
+export type { I18nKey, Lang }
 
 const DICT: Record<Lang, Record<I18nKey, string>> = { en, fr }
 
@@ -25,13 +26,6 @@ export function translate(lang: Lang, key: I18nKey, params?: Record<string, stri
   return raw.replace(/\{(\w+)\}/g, (_, k: string) => (params[k] === undefined ? `{${k}}` : String(params[k])))
 }
 
-interface LangValue {
-  lang: Lang
-  setLang: (l: Lang) => void
-  t: (key: I18nKey, params?: Record<string, string | number>) => string
-}
-
-const LangContext = createContext<LangValue | null>(null)
 
 function initial(): Lang {
   try {

@@ -27,7 +27,7 @@ export interface HeroMetric {
 }
 
 export function TodayBand({
-  title, subtitle, waiting, unit, severities, sentence, primaryTo, secondaryTo, metrics,
+  title, subtitle, waiting, unit, headline, severities, sentence, primaryTo, secondaryTo, metrics, primaryLabel, secondaryLabel, metricsLabel,
 }: {
   /* The page title lives inside the banner. A separate heading above it would
      be a second band of mostly-empty background saying the same thing. */
@@ -36,6 +36,11 @@ export function TodayBand({
   waiting: number
   /** Pack word for what is waiting, already pluralised by the caller. */
   unit: string
+  /** Full headline after the figure; replaces the "need a decision" default. */
+  headline?: string
+  primaryLabel?: string
+  secondaryLabel?: string
+  metricsLabel?: string
   severities: { severity: Severity; count: number }[]
   sentence: string | null
   primaryTo: string | null
@@ -74,11 +79,11 @@ export function TodayBand({
                   {waiting}
                 </span>
                 <span className="text-foreground text-lg font-medium">
-                  {t(waiting === 1 ? 'band.needsOne' : 'band.needsMany', { unit })}
+                  {headline ?? t(waiting === 1 ? 'band.needsOne' : 'band.needsMany', { unit })}
                 </span>
               </p>
 
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+              {severities.some((s) => s.count > 0) && <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
                 <span className="text-ai-muted text-xs">{t('band.findings')}</span>
                 <ul className="flex flex-wrap items-center gap-x-4 gap-y-1">
                   {severities
@@ -91,7 +96,7 @@ export function TodayBand({
                       </li>
                     ))}
                 </ul>
-              </div>
+              </div>}
             </>
           )}
 
@@ -109,13 +114,13 @@ export function TodayBand({
                  visually while being invisible to the check. */
               <Button asChild data-variant="primary">
                 <Link to={primaryTo}>
-                  {t('band.first')}
+                  {primaryLabel ?? t('band.first')}
                   <ArrowRight className="size-4" aria-hidden />
                 </Link>
               </Button>
             )}
             <Button asChild variant="outline">
-              <Link to={secondaryTo}>{clear ? t('band.openQueue') : t('band.seeAll', { n: waiting })}</Link>
+              <Link to={secondaryTo}>{secondaryLabel ?? (clear ? t('band.openQueue') : t('band.seeAll', { n: waiting }))}</Link>
             </Button>
           </div>
         </div>
@@ -126,7 +131,7 @@ export function TodayBand({
             colour and a naive contrast check reads that as near-black. */}
         <dl className="border-ai-border bg-surface w-full shrink-0 divide-y divide-border rounded-lg border lg:w-72">
           <div className="text-muted-foreground px-3.5 py-2 eyebrow">
-            {t('band.stands')}
+            {metricsLabel ?? t('band.stands')}
           </div>
           {metrics.map((m) => (
             <div key={m.label} className="flex items-center justify-between gap-3 px-3.5 py-2">

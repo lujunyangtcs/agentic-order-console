@@ -21,12 +21,16 @@ import { kindKey, roleNameKey, rolePurposeKey, useLang } from '@/i18n'
 import { STAKEHOLDER_KINDS, type Role } from '@/types/domain'
 import { cn } from '@/lib/utils'
 
+/** The carriers the presenter can act for: the two in the walk, one without a system. */
+const ACTING_CARRIERS = ['CAR-A', 'CAR-D', 'CAR-E', 'CAR-B', 'CAR-H']
+
 export function Topbar() {
-  const { session, signOut, setRole, setStakeholderKind } = useAuth()
+  const { session, signOut, setRole, setStakeholderKind, setCarrier } = useAuth()
   const { start: startTour } = useTour()
   const { t, lang } = useLang()
   const navigate = useNavigate()
   const { data } = useQuery({ queryKey: ['summary'], queryFn: () => api.orders.summary() })
+  const carriers = useQuery({ queryKey: ['carriers'], queryFn: () => api.carrier.carriers() })
   const scope = session?.role === 'Carrier' ? session.carrierId : session?.role === 'Customer' ? session.customerId : ''
   const unread = useQuery({
     queryKey: ['unread', session?.role, scope],
@@ -170,6 +174,27 @@ export function Topbar() {
                   aria-hidden
                 />
                 <span className="text-xs">{t(kindKey(k))}</span>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground text-2xs font-normal">
+              {t('chrome.actingFor')} · {t(roleNameKey('Carrier'))}
+            </DropdownMenuLabel>
+            {(carriers.data ?? []).filter((c) => ACTING_CARRIERS.includes(c.id)).map((c) => (
+              <DropdownMenuItem
+                key={c.id}
+                data-carrier-option={c.id}
+                onSelect={() => {
+                  setCarrier(c.id, !c.hasTms)
+                  navigate('/carrier/inbox')
+                }}
+                className="gap-2"
+              >
+                <Check className={cn('size-3.5', !(session.role === 'Carrier' && session.carrierId === c.id) && 'opacity-0')} aria-hidden />
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-xs">{c.name}</span>
+                  <span className="text-muted-foreground text-2xs">{c.hasTms ? t('assign.tms') : t('chrome.portalMode')}</span>
+                </span>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />

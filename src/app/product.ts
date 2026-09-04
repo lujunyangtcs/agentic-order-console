@@ -30,6 +30,8 @@ export const SYSTEMS = {
   billing: 'DirectA',
   /** Carrier transport management systems, reached over EDI/API. */
   carrierTms: 'Carrier TMS',
+  /** The terminal's weigh scale prints the bill of lading. */
+  scale: 'Weigh scale',
   /** Third-party arrival-time provider the ETA can be enriched from. */
   eta: 'ETA provider',
   /** IT service database where the application and its users are registered. */

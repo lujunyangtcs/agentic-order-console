@@ -4,11 +4,23 @@ import { AppShell } from './shell/AppShell'
 import { HomeRedirect } from './shell/HomeRedirect'
 import { LoginRoute } from '@/routes/login/LoginRoute'
 import { PlaceholderRoute } from '@/routes/shared/PlaceholderRoute'
+import { HistoryRoute } from '@/routes/history/HistoryRoute'
+import { PortalRoute } from '@/routes/portal/PortalRoute'
+import { EpodRoute } from '@/routes/epod/EpodRoute'
+import { StakeholderRoute } from '@/routes/stakeholder/StakeholderRoute'
+import { YardRoute } from '@/routes/yard/YardRoute'
+import { DispatchRoute } from '@/routes/dispatch/DispatchRoute'
 import { RouteGate } from '@/components/state/RouteGate'
 import { AuditRoute } from '@/routes/audit/AuditRoute'
 import { IntegrationsRoute } from '@/routes/admin/IntegrationsRoute'
 import { WorklistRoute } from '@/routes/worklist/WorklistRoute'
 import { OrderRoute } from '@/routes/orders/OrderRoute'
+import { RequestsRoute } from '@/routes/requests/RequestsRoute'
+import { InboxRoute } from '@/routes/carrier/InboxRoute'
+import { LoadsRoute } from '@/routes/carrier/LoadsRoute'
+import { TrackRoute } from '@/routes/track/TrackRoute'
+import { NotificationsRoute } from '@/routes/notifications/NotificationsRoute'
+import { RulesRoute } from '@/routes/admin/RulesRoute'
 import type { Role } from '@/types/domain'
 import type { I18nKey } from '@/i18n'
 
@@ -50,36 +62,36 @@ export const router = createBrowserRouter([
       // ── service desk ────────────────────────────────────────────────
       { path: 'worklist', element: gate(CVC, <WorklistRoute />) },
       { path: 'orders/:orderId', element: gate(ALL, <OrderRoute />) },
-      { path: 'requests', element: page(STAFF, 'page.requests.title', 'page.requests.desc') },
+      { path: 'requests', element: gate(STAFF, <RequestsRoute />) },
       { path: 'exceptions', element: page(CVC, 'page.exceptions.title', 'page.exceptions.desc') },
-      { path: 'track', element: page(ALL, 'page.track.title', 'page.track.desc') },
+      { path: 'track', element: gate(ALL, <TrackRoute />) },
 
       // ── reports ─────────────────────────────────────────────────────
       { path: 'reports', element: page(STAFF, 'page.reports.title', 'page.reports.desc') },
       { path: 'reports/scorecard', element: page([...STAFF, 'Carrier'], 'page.scorecard.title', 'page.scorecard.desc') },
       { path: 'reports/benchmark', element: page(STAFF, 'page.benchmark.title', 'page.benchmark.desc') },
       { path: 'reports/team', element: page(CVC, 'page.team.title', 'page.team.desc') },
-      { path: 'history', element: page(ALL, 'page.history.title', 'page.history.desc') },
+      { path: 'history', element: gate(ALL, <HistoryRoute />) },
 
       // ── carrier ─────────────────────────────────────────────────────
       { path: 'carrier', element: <Navigate to="/carrier/inbox" replace /> },
-      { path: 'carrier/inbox', element: page(CARRIER, 'page.inbox.title', 'page.inbox.desc') },
-      { path: 'carrier/loads', element: page(CARRIER, 'page.loads.title', 'page.loads.desc') },
+      { path: 'carrier/inbox', element: gate(CARRIER, <InboxRoute />) },
+      { path: 'carrier/loads', element: gate(CARRIER, <LoadsRoute />) },
 
       // ── customer ────────────────────────────────────────────────────
-      { path: 'portal', element: page(CUSTOMER, 'page.portal.title', 'page.portal.desc') },
-      { path: 'notifications', element: page(ALL, 'page.notifications.title') },
+      { path: 'portal', element: gate(CUSTOMER, <PortalRoute />) },
+      { path: 'notifications', element: gate(ALL, <NotificationsRoute />) },
 
       // ── other stakeholders ──────────────────────────────────────────
-      { path: 'stakeholder', element: page(STAKEHOLDER, 'page.stakeholder.title', 'page.stakeholder.desc') },
-      { path: 'yard', element: page(STAKEHOLDER, 'page.yard.title', 'page.yard.desc') },
-      { path: 'dispatch', element: page(STAKEHOLDER, 'page.dispatch.title', 'page.dispatch.desc') },
-      { path: 'epod/:orderId', element: page(ALL, 'page.epod.title') },
+      { path: 'stakeholder', element: gate(STAKEHOLDER, <StakeholderRoute />) },
+      { path: 'yard', element: gate(STAKEHOLDER, <YardRoute />) },
+      { path: 'dispatch', element: gate(STAKEHOLDER, <DispatchRoute />) },
+      { path: 'epod/:orderId', element: gate(ALL, <EpodRoute />) },
 
       // ── administration ──────────────────────────────────────────────
       { path: 'admin', element: <Navigate to="/admin/users" replace /> },
       { path: 'admin/users', element: page(ADMIN, 'page.users.title', 'page.users.desc') },
-      { path: 'admin/notification-rules', element: page(ADMIN, 'page.rules.title', 'page.rules.desc') },
+      { path: 'admin/notification-rules', element: gate(ADMIN, <RulesRoute />) },
       { path: 'admin/security', element: page(ADMIN, 'page.security.title', 'page.security.desc') },
       { path: 'admin/integrations', element: gate(ADMIN, <IntegrationsRoute />) },
       { path: 'admin/architecture', element: page(ADMIN, 'page.architecture.title', 'page.architecture.desc') },

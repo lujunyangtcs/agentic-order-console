@@ -159,7 +159,7 @@ function generateHistory(): Order[] {
     const mm = 5 * Math.floor(rnd() * 12)
     const startAt = ts(dayOffset, `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`)
     const priority: Priority = rnd() < 0.12 ? 'urgent' : rnd() < 0.3 ? 'priority' : 'standard'
-    const id = `SO-${String(880 + i).padStart(4, '0')}`
+    const id = `SO-${String(600 + i).padStart(4, '0')}`
     const base: Order = {
       id,
       erpRef: erpRef(1000 + i),
