@@ -214,7 +214,7 @@ export function OrderRoute() {
 
         {!d.isRequest && (
           <section className="flex flex-col gap-3">
-            <div className="flex items-baseline justify-between">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
               <h2 className="font-display text-lg font-semibold">{t('order.timeline')}</h2>
               <span className="text-muted-foreground text-xs">{t('order.timeline.sub')}</span>
             </div>

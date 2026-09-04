@@ -153,3 +153,11 @@ prints. The rules applied and the output was still wrong three ways: the
 activity ticker printed, a list capped by `max-height` clipped at nine rows of
 seventeen, and the drawing itself was missing — `height: auto` on an inline SVG
 resolves to zero without an intrinsic ratio to work from.
+
+## V13 · Phone width (390 × 844)
+
+No page-level horizontal overflow on any route (`document.documentElement.scrollWidth <= innerWidth`), the menu button opens the navigation drawer with the same groups as the rail, the tracking map renders tiles (or the schematic when tiles fail), and `?embed=1` shows the phone chrome with four bottom tabs and the eleven-step stepper. Checked on the production preview (port 4173) with a mobile viewport preset.
+
+## V14 · French
+
+The language gate (`scripts/check-i18n.mts`) proves every English key has a French value and every `t()` call resolves. The runtime sweep proves no page renders a missing-key marker: switch to FR, walk every route as every role, and count `[[` in `document.body.innerText` — the count must be zero on all 26 routes. Data values (customer, carrier and site names, notes) stay in English by design.

@@ -57,7 +57,7 @@ export function StatusStepper({ current, reachedAt, actionable = [], onAdvance, 
                   >
                     {done && <Check className="size-2.5" strokeWidth={3} />}
                   </span>
-                  <span className={cn('truncate text-2xs', active ? 'font-semibold' : 'font-medium')}>{t(statusKey(s))}</span>
+                  <span className={cn('truncate text-2xs', active ? 'font-semibold' : 'hidden font-medium sm:inline')}>{t(statusKey(s))}</span>
                 </span>
                 <span className={cn('block min-h-3.5 truncate pl-5 text-2xs', active ? 'text-accent-text' : 'text-muted-foreground')}>
                   {at ? formatTime(at) : canAct ? '→' : ''}
