@@ -36,7 +36,7 @@ export function StatusStepper({ current, reachedAt, actionable = [], onAdvance, 
   const cur = statusIndex(current)
 
   return (
-    <div data-stepper className={cn('-mx-1 overflow-x-auto px-1', className)}>
+    <div data-stepper className={cn('-mx-1 overflow-x-auto px-1 pt-4 pb-1', className)}>
       <ol className="grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(76px, 1fr))` }}>
         {ORDER_STATUSES.map((s, i) => {
           const idx = statusIndex(s)
