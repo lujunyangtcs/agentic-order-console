@@ -61,7 +61,7 @@ export const LANES: Record<string, string> = {
 
 /** Rate factor and terminals per carrier; the rate table is derived below. */
 const CARRIER_BASE: Omit<Carrier, 'rates'>[] = [
-  { id: 'CAR-A', name: 'Summit Haulage', yard: [44.26, -76.55], province: 'ON', regions: ['ECAN'], terminals: ['TERM-BATH', 'TERM-MISS'], trucks: 14, hasTms: true },
+  { id: 'CAR-A', name: 'Frontenac Haulage', yard: [44.26, -76.55], province: 'ON', regions: ['ECAN'], terminals: ['TERM-BATH', 'TERM-MISS'], trucks: 14, hasTms: true },
   { id: 'CAR-B', name: 'Lakeshore Bulk Transport', yard: [43.70, -79.50], province: 'ON', regions: ['ECAN'], terminals: ['TERM-MISS', 'TERM-BATH'], trucks: 18, hasTms: true },
   { id: 'CAR-C', name: 'Transport Rive-Sud', yard: [45.53, -73.47], province: 'QC', regions: ['ECAN'], terminals: ['TERM-STCON'], trucks: 12, hasTms: true },
   { id: 'CAR-D', name: 'Capital Carriers', yard: [45.38, -75.72], province: 'ON', regions: ['ECAN'], terminals: ['TERM-BATH', 'TERM-STCON'], trucks: 9, hasTms: true },

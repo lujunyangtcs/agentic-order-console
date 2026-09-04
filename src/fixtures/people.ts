@@ -15,14 +15,14 @@ export const USERS: User[] = [
   { id: 'U-0531', name: 'GA', email: 'ga@example.com', role: 'Other Stakeholder', stakeholderKind: 'dispatcher', region: 'ECAN', active: true, mfaEnrolled: true, ticketId: null },
   { id: 'U-0540', name: 'BK', email: 'bk@example.com', role: 'Other Stakeholder', stakeholderKind: 'shipping_point', region: 'ECAN', active: true, mfaEnrolled: false, ticketId: 'TCK-2' },
   { id: 'U-0544', name: 'MC', email: 'mc@example.com', role: 'Other Stakeholder', stakeholderKind: 'shipping_point', region: 'WCAN', active: true, mfaEnrolled: true, ticketId: null },
-  { id: 'U-0602', name: 'Summit Haulage dispatch', email: 'dispatch@summit-haulage.example', role: 'Carrier', region: 'ECAN', active: true, mfaEnrolled: true, ticketId: 'TCK-1' },
+  { id: 'U-0602', name: 'Frontenac Haulage dispatch', email: 'dispatch@frontenac-haulage.example', role: 'Carrier', region: 'ECAN', active: true, mfaEnrolled: true, ticketId: 'TCK-1' },
 ]
 
 export const USER_BY_ID: Record<string, User> = Object.fromEntries(USERS.map((u) => [u.id, u]))
 export const CVRS: User[] = USERS.filter((u) => u.role === 'CVC User')
 
 export const TICKETS: Ticket[] = [
-  { id: 'TCK-1', system: 'ServiceNow', key: 'RITM0048213', state: 'closed', subject: 'Carrier portal access for Summit Haulage dispatch', userId: 'U-0602', createdAt: ts(-21, '10:12') },
+  { id: 'TCK-1', system: 'ServiceNow', key: 'RITM0048213', state: 'closed', subject: 'Carrier portal access for Frontenac Haulage dispatch', userId: 'U-0602', createdAt: ts(-21, '10:12') },
   { id: 'TCK-2', system: 'ServiceNow', key: 'RITM0048877', state: 'approved', subject: 'Shipping-point user for Bath terminal', userId: 'U-0540', createdAt: ts(-6, '15:40') },
   { id: 'TCK-3', system: 'Jira', key: 'ITSD-1192', state: 'open', subject: 'Register the order console in the application catalogue', userId: 'U-0102', createdAt: ts(-2, '09:05') },
 ]

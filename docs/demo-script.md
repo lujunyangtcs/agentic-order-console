@@ -16,10 +16,10 @@ Every number below is what the screen shows on a fresh session (open the app in 
 
 **Step 2 · Desk → carrier.** Switch to **CVC User**. Open order **4501200** (SO-1042, Northgate Ready-Mix, Bath terminal → Kingston, 34 t). Status **Order created**; the next-step card says *Choose a carrier*. Click it.
 - The drawer waits, then reveals three suggestions with typed reasons:
-  **1 Summit Haulage · 99** (100% on time · 11 free · $7.21 per tonne), **2 Northbound Freight · 96** (portal only), **3 Capital Carriers · 92**.
-- Say: "The AI ranks; the person chooses." Pick Summit Haulage → **Send request**. Status flips to **Pending carrier**; the request appears under *Carrier requests* on the order and on the **Requests** page with *sent x min ago*, Remind and Expedite.
+  **1 Frontenac Haulage · 99** (100% on time · 11 free · $7.21 per tonne), **2 Northbound Freight · 96** (portal only), **3 Capital Carriers · 92**.
+- Say: "The AI ranks; the person chooses." Pick Frontenac Haulage → **Send request**. Status flips to **Pending carrier**; the request appears under *Carrier requests* on the order and on the **Requests** page with *sent x min ago*, Remind and Expedite.
 
-**Step 3 · Carrier → desk + customer.** Switch to **Carrier** (acting for Summit Haulage). **Inbox** shows the request for 4501200. **Accept** → pick a truck → confirm. Status **Order scheduled**. Switch back to the desk for a beat: the bell has a new notification *Summit Haulage accepted order 4501200*; the customer's portal shows the same.
+**Step 3 · Carrier → desk + customer.** Switch to **Carrier** (acting for Frontenac Haulage). **Inbox** shows the request for 4501200. **Accept** → pick a truck → confirm. Status **Order scheduled**. Switch back to the desk for a beat: the bell has a new notification *Frontenac Haulage accepted order 4501200*; the customer's portal shows the same.
 
 **Step 4 · Carrier → shipping point.** Still as Carrier, open **My loads** → tap **Truck in transit to terminal** on 4501200. Switch to **Other Stakeholder → Shipping point**: the **Loading board** for Bath terminal lists the truck under *Inbound to the terminal*.
 
@@ -29,7 +29,7 @@ Every number below is what the screen shows on a fresh session (open the app in 
 
 **Step 7 · Customer → desk.** As Carrier tap **On site**, then **Unloading**, then **Unload completed**. Switch to **Customer**, open the order: the next-step card says **Sign for the delivery**. Sign with the mouse → **Sign and confirm delivery**. Status **Delivery completed**; documents now include **Signed bill of lading BOL-01200**, a **Delivery record** and a **DirectA invoice**; the toast confirms the archive. Click **Open** on the signed bill of lading → the proof-of-delivery document with the signature image and the eleven milestones with timestamps.
 
-**Step 8 · System → desk.** As CVC User, **Event log** (the top figures move, the log shows the last events with who recorded them: carrier, weigh scale, customer, system of record) and **Carrier scorecard** (Summit Haulage's loads and on-time rate include the order you just closed). Drag the on-time weight and watch the ranking re-order.
+**Step 8 · System → desk.** As CVC User, **Event log** (the top figures move, the log shows the last events with who recorded them: carrier, weigh scale, customer, system of record) and **Carrier scorecard** (Frontenac Haulage's loads and on-time rate include the order you just closed). Drag the on-time weight and watch the ranking re-order.
 
 ## T3 — Rejection and reassignment (3 min)
 
