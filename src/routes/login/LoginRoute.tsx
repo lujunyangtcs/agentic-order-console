@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, ArrowRight, ChevronDown, KeyRound, Lock, LogIn, ShieldCheck, User } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, ChevronDown, KeyRound, Lock, LogIn, ShieldCheck, User } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { DEMO_IDENTITY, useAuth } from '@/app/auth'
 import { ALL_ROLES, ROLE_SLUG } from '@/app/permissions'
 import { homeFor } from '@/app/nav'
 import { api } from '@/services'
-import { roleNameKey, useLang, type I18nKey } from '@/i18n'
+import { roleNameKey, rolePurposeKey, useLang, type I18nKey } from '@/i18n'
 import type { Role } from '@/types/domain'
 import { cn } from '@/lib/utils'
 
@@ -136,13 +137,25 @@ export function LoginRoute() {
                   <div className="flex size-11 items-center justify-center rounded-md bg-white/10 text-white"><User className="size-5" aria-hidden /></div>
                   <span className="border-accent-bright/60 text-accent-bright rounded-full border px-3 py-1 text-[9.5px] font-semibold tracking-[0.18em] uppercase">{t('login.persona')}</span>
                 </div>
-                <label className="relative mt-4 block">
-                  <span className="sr-only">{t('login.chooseRole')}</span>
-                  <select value={role} onChange={(e) => setRole(e.target.value as Role)} data-login-role-select className="w-full appearance-none rounded-md border border-white/15 bg-black/35 py-2.5 pr-10 pl-3.5 text-[21px] leading-tight font-semibold text-white outline-none focus:border-white/50">
-                    {ALL_ROLES.map((r) => <option key={r} value={r} className="text-black">{t(roleNameKey(r))}</option>)}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-5 -translate-y-1/2 text-white/60" aria-hidden />
-                </label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button type="button" data-login-role-select aria-label={t('login.chooseRole')} className="mt-4 flex w-full items-center justify-between gap-3 rounded-md border border-white/15 bg-black/35 py-2.5 pr-3 pl-3.5 text-left text-[21px] leading-tight font-semibold text-white outline-none transition hover:border-white/40 focus-visible:border-white/60 data-[state=open]:border-white/60">
+                      <span className="truncate">{t(roleNameKey(role))}</span>
+                      <ChevronDown className="size-5 shrink-0 text-white/60 transition-transform duration-200 data-[state=open]:rotate-180" aria-hidden />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" sideOffset={6} className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-md border border-white/15 bg-[#0b1220]/95 p-1.5 text-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-md" data-login-role-menu>
+                    {ALL_ROLES.map((r) => (
+                      <DropdownMenuItem key={r} onSelect={() => setRole(r)} data-login-role-option={r} className={cn('flex cursor-pointer items-start gap-3 rounded-sm px-3 py-2.5 text-white focus:bg-white/10 focus:text-white data-[highlighted]:bg-white/10 data-[highlighted]:text-white', role === r && 'bg-white/[0.07]')}>
+                        <Check className={cn('mt-1 size-4 shrink-0 text-accent-bright', role !== r && 'opacity-0')} aria-hidden />
+                        <span className="min-w-0">
+                          <span className="block text-[15px] leading-tight font-semibold">{t(roleNameKey(r))}</span>
+                          <span className="block text-[11.5px] leading-snug text-white/60">{t(rolePurposeKey(r))}</span>
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <ul className="mt-3.5 space-y-2" data-login-bullets={slug}>
                   {[1, 2, 3].map((n) => (
                     <li key={n} className="flex items-start gap-2.5 text-[12.5px] leading-snug text-white/80">
