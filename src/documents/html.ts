@@ -75,8 +75,9 @@ const CSS = `
   @page { size: A4; margin: 16mm; }
   * { box-sizing: border-box; }
   body { margin: 0; background: #e9edf3; font-family: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #0b1220; font-size: 12px; line-height: 1.45; }
-  .sheet { background: #fff; max-width: 820px; margin: 24px auto; padding: 44px 48px 36px; box-shadow: 0 8px 30px rgba(1,30,106,.12); }
-  @media print { body { background: #fff; } .sheet { box-shadow: none; margin: 0; padding: 0; max-width: none; } }
+  body { overflow-x: hidden; }
+  .sheet { background: #fff; width: 820px; margin: 24px auto; padding: 44px 48px 36px; box-shadow: 0 8px 30px rgba(1,30,106,.12); }
+  @media print { body { background: #fff; } .sheet { box-shadow: none; margin: 0; padding: 0; width: auto; zoom: 1 !important; transform: none !important; } }
   .head { display: flex; justify-content: space-between; gap: 24px; border-bottom: 2px solid #011e6a; padding-bottom: 14px; }
   .brand { font-size: 17px; font-weight: 700; letter-spacing: -.01em; color: #011e6a; }
   .brand small { display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-top: 3px; }
@@ -116,6 +117,10 @@ const CSS = `
   .foot { margin-top: 30px; border-top: 1px solid #d5dbe5; padding-top: 10px; display: flex; justify-content: space-between; gap: 16px; color: #6b7280; font-size: 10px; }
   h2 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #011e6a; margin: 22px 0 0; }
 `
+
+/** Scale the fixed-width sheet to the frame, the way a PDF viewer fits a page:
+ *  the layout never reflows, it only gets smaller on a phone. */
+const FIT = `<script>(function(){var W=820;function fit(){var s=document.querySelector('.sheet');if(!s)return;var w=document.documentElement.clientWidth;var k=Math.min(1,(w-16)/W);if('zoom' in s.style){s.style.zoom=String(k);s.style.margin=(k<1?'8px auto':'24px auto');}else{s.style.transformOrigin='top left';s.style.transform='scale('+k+')';s.style.marginLeft=Math.max(8,(w-W*k)/2)+'px';document.body.style.height=(s.offsetHeight*k+16)+'px';}}fit();addEventListener('resize',fit);})()</script>`
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string)
 const money = (n: number, lang: Lang) => n.toLocaleString(lang === 'fr' ? 'fr-CA' : 'en-CA', { style: 'currency', currency: 'CAD' })
@@ -249,7 +254,7 @@ export function documentHtml(m: DocumentModel, lang: Lang): string {
       break
     }
   }
-  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>${esc(title)} ${esc(m.reference)}</title><style>${CSS}</style></head><body><div class="sheet">${head(m, title, m.reference, d, lang, extra)}${body}<div class="foot"><span>${esc(m.seller.console)} · ${esc(m.order.consoleId)}</span><span>${d.footer}</span></div></div></body></html>`
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>${esc(title)} ${esc(m.reference)}</title><style>${CSS}</style></head><body><div class="sheet">${head(m, title, m.reference, d, lang, extra)}${body}<div class="foot"><span>${esc(m.seller.console)} · ${esc(m.order.consoleId)}</span><span>${d.footer}</span></div></div>${FIT}</body></html>`
 }
 
 export function documentFilename(m: DocumentModel): string {

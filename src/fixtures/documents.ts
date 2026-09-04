@@ -31,7 +31,7 @@ function postal(id: string, province: string): string {
   const h = hash(`${id}-pc`)
   const first: Record<string, string> = { ON: 'K', QC: 'J', AB: 'T', BC: 'V' }
   const L = 'ABCEGHJKLMNPRSTVWXYZ'
-  return `${first[province] ?? 'K'}${h % 10}${L[h % L.length]} ${(h >> 3) % 10}${L[(h >> 5) % L.length]}${(h >> 7) % 10}`
+  return `${first[province] ?? 'K'}${h % 10}${L[h % L.length]} ${(h >>> 3) % 10}${L[(h >>> 5) % L.length]}${(h >>> 7) % 10}`
 }
 
 /** List price per tonne, Canadian dollars, by product code. */
