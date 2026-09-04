@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Check, FileText, Printer } from 'lucide-react'
+import { Check, ChevronRight, FileText, Printer } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { InlineSpinner } from '@/components/state/States'
 import { api } from '@/services'
-import type { YardRow } from '@/services'
+import type { OrderDocument, YardRow } from '@/services'
+import { DocumentDialog } from '@/components/documents/DocumentDialog'
 import { useActor } from '@/app/useActor'
 import { SYSTEMS } from '@/app/product'
 import { productKey, useT } from '@/i18n'
@@ -24,10 +25,16 @@ export function LoadingCompleteDialog({ row, onOpenChange }: { row: YardRow | nu
   const qc = useQueryClient()
   const actor = useActor()
   const [phase, setPhase] = useState<'confirm' | 'printing' | 'printed'>('confirm')
+  const [bolDoc, setBolDoc] = useState<OrderDocument | null>(null)
+  const [viewing, setViewing] = useState(false)
   const bol = row ? `BOL-${row.erpRef.slice(-5)}` : ''
 
   useEffect(() => {
-    if (row) setPhase('confirm')
+    if (row) {
+      setPhase('confirm')
+      setBolDoc(null)
+      setViewing(false)
+    }
   }, [row])
 
   const complete = useMutation({
@@ -36,8 +43,15 @@ export function LoadingCompleteDialog({ row, onOpenChange }: { row: YardRow | nu
       await new Promise((r) => setTimeout(r, 900))
       return api.tracking.advance(row!.orderId, 'load_completed', actor)
     },
-    onSuccess: () => {
+    onSuccess: async (res) => {
       setPhase('printed')
+      // The paper the scale just printed, so the presenter can open it here.
+      const fromResult = res.documents.find((x) => x.kind === 'bol') ?? null
+      if (fromResult) setBolDoc(fromResult)
+      else {
+        const d = await api.orders.detail(row!.orderId)
+        setBolDoc(d?.documents.find((x) => x.kind === 'bol') ?? null)
+      }
       toast.success(t('yard.done', { bol }))
       qc.invalidateQueries()
     },
@@ -60,13 +74,15 @@ export function LoadingCompleteDialog({ row, onOpenChange }: { row: YardRow | nu
         )}
         {phase === 'printing' && <InlineSpinner label={t('yard.printing', { system: SYSTEMS.scale })} />}
         {phase === 'printed' && (
-          <div className="border-verdict-pass bg-verdict-pass-bg flex items-start gap-2 rounded-md border px-3 py-2.5 text-xs" data-printed>
+          <button type="button" onClick={() => bolDoc && setViewing(true)} disabled={!bolDoc} className="border-verdict-pass bg-verdict-pass-bg hover:bg-verdict-pass/15 flex w-full items-start gap-2 rounded-md border px-3 py-2.5 text-left text-xs transition-colors focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none" data-printed data-yard-open-bol>
             <FileText className="text-verdict-pass mt-0.5 size-4 shrink-0" aria-hidden />
-            <span>
+            <span className="min-w-0 flex-1">
               <span className="block font-medium">{t('yard.printed', { bol })}</span>
               <span className="text-muted-foreground block">{t('yard.printedBody', { system: SYSTEMS.scale })}</span>
+              <span className="text-accent-text mt-1 block font-medium">{t('yard.openBol')}</span>
             </span>
-          </div>
+            <ChevronRight className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
+          </button>
         )}
         <div className="flex justify-end gap-2">
           {phase === 'printed' ? (
@@ -81,6 +97,7 @@ export function LoadingCompleteDialog({ row, onOpenChange }: { row: YardRow | nu
           )}
         </div>
       </DialogContent>
+      {row && <DocumentDialog orderId={row.orderId} doc={viewing ? bolDoc : null} onOpenChange={(o) => !o && setViewing(false)} />}
     </Dialog>
   )
 }

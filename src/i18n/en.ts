@@ -623,6 +623,7 @@ export const en = {
   'yard.complete.confirm': 'Confirm and print bill of lading',
   'yard.printing': 'Waiting for {system} to print the bill of lading',
   'yard.printed': 'Bill of lading {bol} printed',
+  'yard.openBol': 'Open the bill of lading',
   'yard.printedBody': 'Printed by {system}. The document is now on the order for the carrier and the customer.',
   'yard.done': 'Load completed. Bill of lading {bol} is on the order.',
   // ---- dispatch board

@@ -603,6 +603,7 @@ export const fr: Record<I18nKey, string> = {
   'yard.complete.confirm': 'Confirmer et imprimer le connaissement',
   'yard.printing': "En attente de l'impression du connaissement par {system}",
   'yard.printed': 'Connaissement {bol} imprimé',
+  'yard.openBol': 'Ouvrir le connaissement',
   'yard.printedBody': 'Imprimé par {system}. Le document est maintenant sur la commande pour le transporteur et le client.',
   'yard.done': 'Chargement terminé. Le connaissement {bol} est sur la commande.',
   // ---- tableau de répartition
