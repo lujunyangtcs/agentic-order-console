@@ -8,7 +8,7 @@ import { DEMO_IDENTITY, useAuth } from '@/app/auth'
 import { ALL_ROLES, ROLE_SLUG } from '@/app/permissions'
 import { homeFor } from '@/app/nav'
 import { api } from '@/services'
-import { roleNameKey, rolePurposeKey, useLang, type I18nKey } from '@/i18n'
+import { roleNameKey, useLang, type I18nKey } from '@/i18n'
 import type { Role } from '@/types/domain'
 import { cn } from '@/lib/utils'
 
@@ -144,14 +144,11 @@ export function LoginRoute() {
                       <ChevronDown className="size-5 shrink-0 text-white/60 transition-transform duration-200 data-[state=open]:rotate-180" aria-hidden />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" sideOffset={6} className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-md border border-white/15 bg-[#0b1220]/95 p-1.5 text-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-md" data-login-role-menu>
+                  <DropdownMenuContent align="start" sideOffset={6} className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-md border border-white/15 bg-[#0b1220]/95 p-1 text-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-md" data-login-role-menu>
                     {ALL_ROLES.map((r) => (
-                      <DropdownMenuItem key={r} onSelect={() => setRole(r)} data-login-role-option={r} className={cn('flex cursor-pointer items-start gap-3 rounded-sm px-3 py-2.5 text-white focus:bg-white/10 focus:text-white data-[highlighted]:bg-white/10 data-[highlighted]:text-white', role === r && 'bg-white/[0.07]')}>
-                        <Check className={cn('mt-1 size-4 shrink-0 text-accent-bright', role !== r && 'opacity-0')} aria-hidden />
-                        <span className="min-w-0">
-                          <span className="block text-[15px] leading-tight font-semibold">{t(roleNameKey(r))}</span>
-                          <span className="block text-[11.5px] leading-snug text-white/60">{t(rolePurposeKey(r))}</span>
-                        </span>
+                      <DropdownMenuItem key={r} onSelect={() => setRole(r)} data-login-role-option={r} className={cn('flex cursor-pointer items-center gap-2.5 rounded-sm px-3 py-1.5 text-[14px] font-medium text-white focus:bg-white/10 focus:text-white data-[highlighted]:bg-white/10 data-[highlighted]:text-white', role === r && 'bg-white/[0.07]')}>
+                        <Check className={cn('size-4 shrink-0 text-accent-bright', role !== r && 'opacity-0')} aria-hidden />
+                        <span className="truncate">{t(roleNameKey(r))}</span>
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
