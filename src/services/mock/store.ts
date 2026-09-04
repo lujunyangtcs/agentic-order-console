@@ -1,8 +1,8 @@
 import type {
-  CarrierRequest, Deviation, Notification, NotificationRule, PodDocument, Priority,
+  CarrierRequest, Deviation, Notification, NotificationRule, Order, PodDocument, Priority,
   SecurityConfig, StatusEvent, Ticket, User,
 } from '@/types/domain'
-import type { ReportSpec } from '../contracts'
+import type { AuditEntry, ReportSpec } from '../contracts'
 
 /**
  * The mutable demo store.
@@ -71,7 +71,9 @@ export interface MockState {
   /** Orders the customer portal raised that the desk has not sent to the ERP yet. */
   orderRequests: OrderRequestDraft[]
   /** Orders created live during the walk (from a portal request). */
-  createdOrders: string[]
+  liveOrders: Order[]
+  /** What was decided, by whom, appended by every mutation. */
+  audit: AuditEntry[]
   /** Free-form flags set by demo controls. */
   flags: Record<string, boolean>
 }
@@ -94,7 +96,8 @@ export function emptyState(): MockState {
     locks: {},
     reports: [],
     orderRequests: [],
-    createdOrders: [],
+    liveOrders: [],
+    audit: [],
     flags: {},
   }
 }
@@ -123,6 +126,9 @@ function persist(next: MockState) {
 }
 
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL) : null
+/* Under Node (the build gates and the probe) an open channel keeps the
+ * process alive forever; unref lets the script exit once its work is done. */
+;(channel as unknown as { unref?: () => void } | null)?.unref?.()
 channel?.addEventListener('message', () => {
   const fresh = read()
   if (fresh) {

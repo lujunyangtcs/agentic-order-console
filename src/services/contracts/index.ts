@@ -326,7 +326,7 @@ export interface LiveAnalytics {
   medianAcceptanceMinutes: number
   onTimePct: number
   byStatus: { status: OrderStatus; count: number }[]
-  lastHour: { minute: number; count: number }[]
+  byHour: { hour: number; count: number }[]
 }
 
 export interface NewUser {
@@ -441,6 +441,8 @@ export interface CarrierApi {
     options: { truckId?: string; reason?: string },
     actor: Actor,
   ): Promise<AdvanceResult>
+  /** Withdraw the open request, if any, and send a new one. */
+  reassign(orderId: string, carrierId: string, actor: Actor): Promise<AdvanceResult>
   scorecard(weights?: Partial<ScorecardWeights>): Promise<ScorecardRow[]>
   carriers(): Promise<{ id: string; name: string; hasTms: boolean }[]>
 }

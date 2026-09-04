@@ -7,6 +7,8 @@ import { PlaceholderRoute } from '@/routes/shared/PlaceholderRoute'
 import { RouteGate } from '@/components/state/RouteGate'
 import { AuditRoute } from '@/routes/audit/AuditRoute'
 import { IntegrationsRoute } from '@/routes/admin/IntegrationsRoute'
+import { WorklistRoute } from '@/routes/worklist/WorklistRoute'
+import { OrderRoute } from '@/routes/orders/OrderRoute'
 import type { Role } from '@/types/domain'
 import type { I18nKey } from '@/i18n'
 
@@ -46,8 +48,8 @@ export const router = createBrowserRouter([
       { index: true, element: <HomeRedirect /> },
 
       // ── service desk ────────────────────────────────────────────────
-      { path: 'worklist', element: page(CVC, 'page.worklist.title', 'page.worklist.desc') },
-      { path: 'orders/:orderId', element: page(ALL, 'page.order.title') },
+      { path: 'worklist', element: gate(CVC, <WorklistRoute />) },
+      { path: 'orders/:orderId', element: gate(ALL, <OrderRoute />) },
       { path: 'requests', element: page(STAFF, 'page.requests.title', 'page.requests.desc') },
       { path: 'exceptions', element: page(CVC, 'page.exceptions.title', 'page.exceptions.desc') },
       { path: 'track', element: page(ALL, 'page.track.title', 'page.track.desc') },

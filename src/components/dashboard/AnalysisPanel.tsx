@@ -53,9 +53,20 @@ const CHIP: Record<Observation['tone'], { label: string; className: string }> = 
   held: { label: 'Held', className: 'bg-muted text-muted-foreground' },
 }
 
-export function AnalysisPanel({ observations, analysis }: {
+export interface AnalysisCopy {
+  title: string
+  subtitle: string
+  empty: string
+  written: string
+  chip: string
+  foot: string
+  toneLabels: Record<Observation['tone'], string>
+}
+
+export function AnalysisPanel({ observations, analysis, copy }: {
   observations: Observation[]
   analysis: AnalysisSentence[]
+  copy: AnalysisCopy
 }) {
   return (
     <section
@@ -65,22 +76,20 @@ export function AnalysisPanel({ observations, analysis }: {
       <header className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-5 pt-4 pb-0.5">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
           <Sparkle className="text-accent-text size-4" aria-hidden />
-          What stands out
+          {copy.title}
         </h2>
-        <p className="text-muted-foreground text-xs">Counted from this account's own data.</p>
+        <p className="text-muted-foreground text-xs">{copy.subtitle}</p>
       </header>
 
       {observations.length === 0 ? (
-        <p className="text-muted-foreground px-5 pb-5 text-sm">
-          Nothing stands out yet. Patterns need a few weeks of documents before they mean anything.
-        </p>
+        <p className="text-muted-foreground px-5 pb-5 text-sm">{copy.empty}</p>
       ) : (
         <div
           data-x-scroll="analysis-rail"
           className="flex gap-3 overflow-x-auto overscroll-x-contain px-5 pt-2.5 pb-4"
         >
           {observations.map((o) => (
-            <ObservationCard key={o.key} observation={o} />
+            <ObservationCard key={o.key} observation={o} toneLabel={copy.toneLabels[o.tone]} />
           ))}
         </div>
       )}
@@ -88,9 +97,9 @@ export function AnalysisPanel({ observations, analysis }: {
       <div className="border-border bg-muted/30 mx-5 mb-5 rounded-md border px-4 py-3.5">
         <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
           <PenLine className="size-3.5" aria-hidden />
-          Written analysis
+          {copy.written}
           <span className="border-border bg-surface text-muted-foreground ml-auto rounded-full border px-1.5 py-0.5 text-2xs">
-            composed, not generated
+            {copy.chip}
           </span>
         </div>
 
@@ -100,18 +109,15 @@ export function AnalysisPanel({ observations, analysis }: {
           ))}
         </div>
 
-        <p className="text-muted-foreground border-border mt-3 border-t pt-2 text-2xs leading-snug">
-          Every sentence is counted from this account's records and links to the one it came from.
-          A sentence whose condition stops holding stops being written.
-        </p>
+        <p className="text-muted-foreground border-border mt-3 border-t pt-2 text-2xs leading-snug">{copy.foot}</p>
       </div>
     </section>
   )
 }
 
-function ObservationCard({ observation: o }: { observation: Observation }) {
+function ObservationCard({ observation: o, toneLabel }: { observation: Observation; toneLabel: string }) {
   const Icon = ICON[o.tone]
-  const chip = CHIP[o.tone]
+  const chip = { className: CHIP[o.tone].className, label: toneLabel }
 
   return (
     <Link

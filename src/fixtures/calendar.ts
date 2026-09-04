@@ -70,6 +70,24 @@ export function ts(offsetDays: number, hhmm = '09:00'): string {
 /** Today, for the `Data as of` stamp every data-dependent page carries (§6.3). */
 export const TODAY = d(0)
 
+/**
+ * The wall clock at start-up, read once so the open book does not drift
+ * while the presenter talks. Today's orders are authored as minutes before
+ * or after this moment: a request "sent 12 minutes ago" is sent twelve
+ * minutes ago whether the demo runs at nine in the morning or nine at night.
+ */
+export const NOW_MS = Date.now()
+
+/** Minutes before start-up, as an ISO timestamp. */
+export function ago(minutes: number): string {
+  return new Date(NOW_MS - minutes * 60_000).toISOString()
+}
+
+/** Minutes after start-up, as an ISO timestamp. */
+export function ahead(minutes: number): string {
+  return new Date(NOW_MS + minutes * 60_000).toISOString()
+}
+
 /** Whole days between two ISO dates. Negative when `to` is earlier. */
 export function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(to) - Date.parse(from)) / DAY_MS)
@@ -92,17 +110,22 @@ const MONTHS = {
 
 export type DateLang = 'en' | 'fr'
 
+/** Date-only fixtures (`YYYY-MM-DD`) are calendar days and stay as written;
+ *  timestamps render in the viewer's local time so "now" on screen matches
+ *  the clock on the wall. */
 export function formatDate(iso: string, lang: DateLang = 'en'): string {
-  const t = Date.parse(iso.length === 10 ? `${iso}T00:00:00Z` : iso)
-  const dt = new Date(t)
-  return `${String(dt.getUTCDate()).padStart(2, '0')} ${MONTHS[lang][dt.getUTCMonth()]} ${dt.getUTCFullYear()}`
+  if (iso.length === 10) {
+    const [y, m, d] = iso.split('-').map(Number)
+    return `${String(d).padStart(2, '0')} ${MONTHS[lang][m - 1]} ${y}`
+  }
+  const dt = new Date(Date.parse(iso))
+  return `${String(dt.getDate()).padStart(2, '0')} ${MONTHS[lang][dt.getMonth()]} ${dt.getFullYear()}`
 }
 
-/** `HH:MM` in UTC — the demo clock is UTC throughout so timestamps never
- *  shift between the presenter's laptop and the projector. */
+/** `HH:MM`, local time. */
 export function formatTime(iso: string): string {
   const dt = new Date(Date.parse(iso))
-  return `${String(dt.getUTCHours()).padStart(2, '0')}:${String(dt.getUTCMinutes()).padStart(2, '0')}`
+  return `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`
 }
 
 export function formatDateTime(iso: string, lang: DateLang = 'en'): string {

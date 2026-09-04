@@ -185,10 +185,15 @@ export interface Notification {
   read: boolean
 }
 
+/** What a rule listens for: a status, or one of three things that are not
+ *  statuses but that people need to hear about. */
+export type RuleTrigger = OrderStatus | 'request_rejected' | 'deviation_filed' | 'bol_uploaded'
+export const EXTRA_TRIGGERS: readonly RuleTrigger[] = ['request_rejected', 'deviation_filed', 'bol_uploaded'] as const
+
 export interface NotificationRule {
   id: string
   name: string
-  trigger: OrderStatus
+  trigger: RuleTrigger
   conditions: { priorityAtLeast?: Priority; lateMinutesOver?: number }
   audience: Role
   channels: Channel[]

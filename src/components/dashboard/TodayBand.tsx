@@ -3,8 +3,8 @@ import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { DailyRead } from './DailyRead'
 import type { Severity } from '@/types/domain'
 import { Button } from '@/components/ui/button'
-import { SEVERITY_LABEL } from '@/components/status/Severity'
 import { cn } from '@/lib/utils'
+import { useT, type I18nKey } from '@/i18n'
 
 const DOT: Record<Severity, string> = {
   critical: 'bg-sev-critical',
@@ -45,6 +45,7 @@ export function TodayBand({
   metrics: HeroMetric[]
 }) {
   const clear = waiting === 0
+  const t = useT()
 
   return (
     <section
@@ -64,7 +65,7 @@ export function TodayBand({
           {clear ? (
             <p className="text-foreground flex items-center gap-2 text-lg font-medium">
               <CheckCircle2 className="text-verdict-pass size-5" aria-hidden />
-              Nothing is waiting on you.
+              {t('band.clear')}
             </p>
           ) : (
             <>
@@ -73,12 +74,12 @@ export function TodayBand({
                   {waiting}
                 </span>
                 <span className="text-foreground text-lg font-medium">
-                  {unit} {waiting === 1 ? 'needs' : 'need'} a decision
+                  {t(waiting === 1 ? 'band.needsOne' : 'band.needsMany', { unit })}
                 </span>
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
-                <span className="text-ai-muted text-xs">Open findings on them:</span>
+                <span className="text-ai-muted text-xs">{t('band.findings')}</span>
                 <ul className="flex flex-wrap items-center gap-x-4 gap-y-1">
                   {severities
                     .filter((s) => s.count > 0)
@@ -86,7 +87,7 @@ export function TodayBand({
                       <li key={s.severity} className="text-ai-muted flex items-center gap-1.5 text-xs">
                         <span className={cn('size-1.5 rounded-full', DOT[s.severity])} aria-hidden />
                         <span className="text-foreground tabular font-medium">{s.count}</span>
-                        {SEVERITY_LABEL[s.severity].toLowerCase()}
+                        {t(`severity.${s.severity}` as I18nKey).toLowerCase()}
                       </li>
                     ))}
                 </ul>
@@ -108,13 +109,13 @@ export function TodayBand({
                  visually while being invisible to the check. */
               <Button asChild data-variant="primary">
                 <Link to={primaryTo}>
-                  Open the first one
+                  {t('band.first')}
                   <ArrowRight className="size-4" aria-hidden />
                 </Link>
               </Button>
             )}
             <Button asChild variant="outline">
-              <Link to={secondaryTo}>{clear ? 'Open the queue' : `See all ${waiting}`}</Link>
+              <Link to={secondaryTo}>{clear ? t('band.openQueue') : t('band.seeAll', { n: waiting })}</Link>
             </Button>
           </div>
         </div>
@@ -125,7 +126,7 @@ export function TodayBand({
             colour and a naive contrast check reads that as near-black. */}
         <dl className="border-ai-border bg-surface w-full shrink-0 divide-y divide-border rounded-lg border lg:w-72">
           <div className="text-muted-foreground px-3.5 py-2 eyebrow">
-            Where the account stands
+            {t('band.stands')}
           </div>
           {metrics.map((m) => (
             <div key={m.label} className="flex items-center justify-between gap-3 px-3.5 py-2">
