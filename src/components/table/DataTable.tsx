@@ -80,6 +80,16 @@ export function DataTable<T>({
   const viewport = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const [viewportH, setViewportH] = useState(maxHeight ?? 0)
+  /* On a phone two pinned columns can eat the whole width and the middle
+   * columns collapse to nothing. Below 640px the table scrolls as one piece. */
+  const [narrow, setNarrow] = useState(false)
+  useEffect(() => {
+    const el = viewport.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(([entry]) => setNarrow(entry.contentRect.width < 640))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const sorted = useMemo(() => {
     if (!sort) return rows
@@ -164,14 +174,14 @@ export function DataTable<T>({
     )
   }
 
-  const stickyClass = (c: ColumnDef<T>) =>
+  const stickyClass = (c: ColumnDef<T>) => narrow ? '' :
     c.pinned === 'left'
       ? 'sticky z-20 bg-surface after:absolute after:inset-y-0 after:-right-px after:w-px after:bg-border'
       : c.pinned === 'right'
         ? 'sticky z-20 bg-surface before:absolute before:inset-y-0 before:-left-px before:w-px before:bg-border'
         : ''
 
-  const stickyStyle = (c: ColumnDef<T>) =>
+  const stickyStyle = (c: ColumnDef<T>) => narrow ? undefined :
     c.pinned === 'left' ? { left: leftOffsets[c.key] }
     : c.pinned === 'right' ? { right: rightOffsets[c.key] }
     : undefined

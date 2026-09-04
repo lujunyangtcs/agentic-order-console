@@ -38,7 +38,7 @@ export const DEMO_IDENTITY = {
 export const DEFAULT_CARRIER_ID = 'CAR-A'
 export const DEFAULT_CUSTOMER_ID = 'CUST-01'
 
-const SESSION_VERSION = 1
+const SESSION_VERSION = 2
 const KEY = `aoc.session.v${SESSION_VERSION}`
 
 interface AuthValue {

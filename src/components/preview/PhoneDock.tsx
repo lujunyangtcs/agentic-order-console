@@ -23,15 +23,9 @@ export function PhoneDock() {
   const src = `${pathname}?${params.toString()}`
 
   return (
-    <aside data-phone-dock className="border-structural-border bg-muted/40 hidden w-[440px] shrink-0 flex-col items-center border-l px-6 py-5 xl:flex">
-      <div className="flex w-full items-center justify-between">
-        <div>
-          <p className="text-sm font-semibold">{t('chrome.phone')}</p>
-          <p className="text-muted-foreground text-2xs">{t('chrome.phoneSub')}</p>
-        </div>
-        <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label={t('common.close')} data-phone-close><X className="size-4" aria-hidden /></Button>
-      </div>
-      <div className="border-rail mt-4 overflow-hidden rounded-xl border-[10px] bg-black shadow-lg" style={{ width: 390 + 20, height: 760 + 20 }}>
+    <aside data-phone-dock className="border-structural-border bg-muted/40 relative hidden w-[440px] shrink-0 flex-col items-center border-l px-6 pt-3 pb-5 xl:flex">
+      <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => setOpen(false)} aria-label={t('common.close')} title={t('chrome.phone')} data-phone-close><X className="size-4" aria-hidden /></Button>
+      <div className="border-rail mt-8 overflow-hidden rounded-xl border-[10px] bg-black shadow-lg" style={{ width: 390 + 20, height: 760 + 20 }}>
         <iframe key={src} src={src} title={t('chrome.phone')} width={390} height={760} className="block bg-white" data-phone-frame />
       </div>
     </aside>
