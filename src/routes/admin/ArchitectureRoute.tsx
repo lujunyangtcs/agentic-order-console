@@ -41,7 +41,7 @@ export function ArchitectureRoute() {
         ]}
       />
 
-      <section className="border-structural-border bg-surface overflow-x-auto rounded-lg border p-4" data-card="architecture">
+      <section className="border-structural-border bg-surface overflow-x-auto rounded-lg border p-4 [contain:inline-size]" data-card="architecture">
         <svg viewBox={`0 0 ${W} ${H}`} className="mx-auto block h-auto w-full max-w-[960px] min-w-[640px]" role="img" aria-label={t('page.architecture.title')}>
           <defs>
             <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted-foreground)" /></marker>

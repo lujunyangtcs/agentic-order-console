@@ -133,12 +133,12 @@ export function Topbar() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="shrink-0 gap-2" data-role-menu>
+            <Button variant="ghost" size="sm" className="min-w-0 shrink gap-2" data-role-menu>
               <User className="size-4" aria-hidden />
               <span className="hidden text-sm 2xl:inline">{session.name}</span>
-              <span className="border-border text-muted-foreground rounded-xs border px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap">
-                {t(roleNameKey(session.role))}
-                {session.role === 'Other Stakeholder' ? ` · ${t(kindKey(session.stakeholderKind))}` : ''}
+              <span className="border-border text-muted-foreground max-w-[38vw] truncate rounded-xs border px-1.5 py-0.5 text-2xs font-medium whitespace-nowrap md:max-w-none">
+                {session.role === 'Other Stakeholder' ? <span className="hidden md:inline">{t(roleNameKey(session.role))} · </span> : t(roleNameKey(session.role))}
+                {session.role === 'Other Stakeholder' ? t(kindKey(session.stakeholderKind)) : ''}
               </span>
             </Button>
           </DropdownMenuTrigger>

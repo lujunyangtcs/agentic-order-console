@@ -47,7 +47,7 @@ export function DispatchRoute() {
       {board.isLoading ? (
         <div className="bg-surface h-72 animate-pulse rounded-lg" />
       ) : (
-        <div className="-mx-4 overflow-x-auto px-4 pb-2 md:-mx-6 md:px-6">
+        <div className="-mx-4 overflow-x-auto px-4 pb-2 [contain:inline-size] md:-mx-6 md:px-6">
           <div className="flex items-stretch gap-4">
             {columns.map((c) => (
               <section key={c.carrierId} data-dispatch-column={c.carrierId} className="border-structural-border bg-surface flex w-[290px] shrink-0 flex-col rounded-lg border">

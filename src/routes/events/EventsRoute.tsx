@@ -60,7 +60,7 @@ export function EventsRoute() {
       <div className="grid gap-4 xl:grid-cols-[1fr_380px] xl:items-stretch">
         <section className="border-structural-border bg-surface flex h-full flex-col rounded-lg border px-5 py-4" data-card="by-hour">
           <h2 className="text-sm font-semibold">{t('events.byHour')}</h2>
-          <div className="mt-3 h-[200px] flex-1">
+          <div className="mt-3 h-[200px] shrink-0">
             {!l ? <div className="bg-muted h-full animate-pulse rounded-md" /> : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={l.byHour} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>

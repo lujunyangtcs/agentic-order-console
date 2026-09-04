@@ -51,9 +51,9 @@ export function UsersRoute() {
 
   const columns = useMemo<ColumnDef<User>[]>(() => [
     { key: 'name', header: t('users.name'), width: '200px', pinned: 'left', sortValue: (r) => r.name, render: (r) => <span className="text-xs font-medium">{r.name}</span> },
-    { key: 'email', header: t('login.email'), width: '240px', render: (r) => <span className="text-muted-foreground text-xs">{r.email}</span> },
-    { key: 'role', header: t('users.role'), width: '210px', sortValue: (r) => r.role, render: (r) => (
-      <select value={r.role} onChange={(e) => setRole.mutate({ userId: r.id, role: e.target.value as Role })} onClick={(e) => e.stopPropagation()} className="border-border bg-background h-8 rounded-md border px-1.5 text-xs" data-user-role={r.id} aria-label={t('users.role')}>
+    { key: 'email', header: t('login.email'), width: '240px', sortValue: (r) => r.email, render: (r) => <span className="text-muted-foreground text-xs">{r.email}</span> },
+    { key: 'role', header: t('users.role'), width: '270px', sortValue: (r) => r.role, render: (r) => (
+      <select value={r.role} onChange={(e) => setRole.mutate({ userId: r.id, role: e.target.value as Role })} onClick={(e) => e.stopPropagation()} className="border-border bg-background h-8 w-full max-w-[250px] truncate rounded-md border px-1.5 text-xs" data-user-role={r.id} aria-label={t('users.role')}>
         {ALL_ROLES.map((role) => <option key={role} value={role}>{t(roleNameKey(role))}{role === 'Other Stakeholder' && r.stakeholderKind ? ` · ${t(kindKey(r.stakeholderKind))}` : ''}</option>)}
       </select>
     ) },
@@ -63,7 +63,7 @@ export function UsersRoute() {
         {r.mfaEnrolled && <ShieldCheck className="size-3" aria-hidden />}{r.mfaEnrolled ? t('users.enrolled') : t('users.notEnrolled')}
       </span>
     ) },
-    { key: 'ticket', header: t('users.ticket'), width: '150px', pinned: 'right', render: (r) => { const tk = r.ticketId ? ticketById.get(r.ticketId) : null; return tk ? <span className="font-mono text-2xs">{tk.system} {tk.key}</span> : <span className="text-muted-foreground text-2xs">—</span> } },
+    { key: 'ticket', header: t('users.ticket'), width: '150px', pinned: 'right', sortValue: (r) => r.ticketId ?? '', render: (r) => { const tk = r.ticketId ? ticketById.get(r.ticketId) : null; return tk ? <span className="font-mono text-2xs">{tk.system} {tk.key}</span> : <span className="text-muted-foreground text-2xs">—</span> } },
   ], [t, setRole, ticketById])
 
   return (

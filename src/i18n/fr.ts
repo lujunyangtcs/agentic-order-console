@@ -514,6 +514,9 @@ export const fr: Record<I18nKey, string> = {
   'portal.raise': 'Demander une commande',
   'portal.empty': 'Aucune commande ouverte. Faites une demande pour commencer.',
   'portal.recent': 'Mises à jour récentes',
+  'portal.toSignTitle': 'En attente de votre signature',
+  'portal.toSign.one': 'Une livraison est déchargée et attend votre signature.',
+  'portal.toSign.many': '{n} livraisons sont déchargées et attendent votre signature.',
   // ---- demander une commande
   'raise.title': 'Demander une commande',
   'raise.desc': "Le service client confirme la demande et l'enregistre comme commande. Le numéro de commande apparaît ici dès qu'il existe.",

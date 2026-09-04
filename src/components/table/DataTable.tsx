@@ -192,7 +192,7 @@ export function DataTable<T>({
       data-x-scroll={name}
       style={maxHeight ? { maxHeight } : undefined}
       className={cn(
-        'border-structural-border bg-surface overflow-x-auto overscroll-x-contain rounded-lg border',
+        'border-structural-border bg-surface overflow-x-auto overscroll-x-contain rounded-lg border [contain:inline-size]',
         maxHeight && 'overflow-y-auto',
         className,
       )}

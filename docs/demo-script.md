@@ -51,5 +51,7 @@ Every number below is what the screen shows on a fresh session (open the app in 
 
 ## If something goes wrong
 
+- **Customer cannot sign 4501200?** The pen only appears once the carrier has tapped On site → Unloading → Unload completed. Two Northgate orders are always seeded unloaded (4501232 and the order for SO-1060): the customer portal lists them under *Waiting for your signature* and the band's primary button is *Sign for the delivery* — use those instead.
+
 - `?dev=1` → **Advance one step** moves the order on screen forward without changing role; **Reset demo data** returns to the seed.
 - A refresh keeps the state (it lives in the browser session). A new tab starts clean.

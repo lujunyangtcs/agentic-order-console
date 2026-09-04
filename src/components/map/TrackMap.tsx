@@ -44,8 +44,10 @@ export interface TrackMapProps {
   forceSvg?: boolean
 }
 
-const TILES = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-const ATTRIBUTION = '&copy; OpenStreetMap contributors &copy; CARTO'
+/* Esri's light grey canvas: no API key, attribution only. CARTO's free
+   basemaps started stamping "API key required" on every tile. */
+const TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+const ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
 
 function icon(kind: 'terminal' | 'site' | 'truck', label?: string, active?: boolean) {
   const cls = kind === 'terminal' ? 'map-pin map-pin--terminal' : kind === 'site' ? 'map-pin map-pin--site' : cn('map-pin map-pin--truck', active && 'map-pin--active')

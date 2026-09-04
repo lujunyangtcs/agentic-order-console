@@ -38,7 +38,7 @@ export function TeamRoute() {
         ]}
       />
 
-      <section className="border-structural-border bg-surface overflow-x-auto rounded-lg border" data-card="heatmap">
+      <section className="border-structural-border bg-surface overflow-x-auto rounded-lg border [contain:inline-size]" data-card="heatmap">
         <table className="w-full min-w-[720px] text-xs">
           <thead>
             <tr className="border-border border-b">

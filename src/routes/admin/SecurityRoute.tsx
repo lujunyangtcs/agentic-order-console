@@ -75,7 +75,7 @@ export function SecurityRoute() {
         </Setting>
       </div>
 
-      <section className="border-structural-border bg-surface overflow-x-auto rounded-lg border" data-card="matrix">
+      <section className="border-structural-border bg-surface overflow-x-auto rounded-lg border [contain:inline-size]" data-card="matrix">
         <header className="border-border border-b px-5 py-3.5"><h2 className="text-sm font-semibold">{t('security.matrix')}</h2></header>
         <table className="w-full min-w-[820px] text-xs">
           <thead className="bg-muted/60">

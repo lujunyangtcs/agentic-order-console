@@ -534,6 +534,9 @@ export const en = {
   'portal.raise': 'Request an order',
   'portal.empty': 'No open orders. Request one to get started.',
   'portal.recent': 'Recent updates',
+  'portal.toSignTitle': 'Waiting for your signature',
+  'portal.toSign.one': 'One delivery is unloaded and needs your signature.',
+  'portal.toSign.many': '{n} deliveries are unloaded and need your signature.',
   // ---- request an order
   'raise.title': 'Request an order',
   'raise.desc': 'The service desk confirms the request and registers it as an order. You will see the order number here as soon as it exists.',

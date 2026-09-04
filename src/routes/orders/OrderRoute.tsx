@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { TrackMap } from '@/components/map/TrackMap'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils'
  */
 export function OrderRoute() {
   const { orderId = '' } = useParams()
+  const [params, setParams] = useSearchParams()
   const { t, lang } = useLang()
   const { session } = useAuth()
   const actor = useActor()
@@ -84,6 +85,18 @@ export function OrderRoute() {
     { key: 'source', header: t('col.source'), width: '110px', render: (e) => <span className="text-muted-foreground text-xs capitalize">{e.source === 'erp' ? SYSTEMS.erp : e.source}</span> },
     { key: 'note', header: t('col.note'), width: '320px', render: (e) => <span className="text-muted-foreground text-xs">{e.note ?? '—'}</span> },
   ], [t, lang])
+
+  /* A link with ?sign=1 (from the customer's portal) lands with the pen out.
+     Declared after the query and before any early return, so hook order is stable. */
+  useEffect(() => {
+    const d0 = detail.data
+    if (params.get('sign') !== '1' || !d0) return
+    if (session?.role === 'Customer' && !d0.isRequest && statusIndex(d0.status) >= statusIndex('on_site') && d0.status !== 'delivery_completed') setSignOpen(true)
+    const next = new URLSearchParams(params)
+    next.delete('sign')
+    setParams(next, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params, detail.data, session?.role])
 
   if (detail.isLoading) {
     return <div className="mx-auto max-w-[1600px] px-4 py-6 md:px-6"><div className="bg-surface h-64 animate-pulse rounded-lg" /></div>

@@ -34,6 +34,8 @@ export function PortalRoute() {
 
   const rows = open.data ?? []
   const onRoad = rows.filter((r) => statusIndex(r.status) >= statusIndex('in_transit') && r.status !== 'delivery_completed')
+  /* Trucks that have arrived and unloaded: the customer's one job is to sign. */
+  const toSign = rows.filter((r) => statusIndex(r.status) >= statusIndex('on_site') && r.status !== 'delivery_completed')
   const arrivingNext = [...onRoad].filter((r) => r.eta).sort((a, b) => Date.parse(a.eta!) - Date.parse(b.eta!))[0]
   const delivered30 = (history.data ?? []).filter((h) => Date.parse(h.deliveredAt) > Date.now() - 30 * 86_400_000)
   const onTime = delivered30.length ? delivered30.filter((h) => h.onTime).length / delivered30.length : 0
@@ -46,12 +48,12 @@ export function PortalRoute() {
         waiting={onRoad.length}
         unit={onRoad.length === 1 ? t('portal.unit.one') : t('portal.unit.many')}
         headline={onRoad.length === 1 ? t('portal.unit.one') : t('portal.unit.many')}
-        primaryLabel={t('portal.openNext')}
+        primaryLabel={toSign.length ? t('order.action.sign') : t('portal.openNext')}
         secondaryLabel={t('portal.trackAll')}
         metricsLabel={t('portal.stands')}
         severities={[]}
         sentence={open.data ? (arrivingNext ? t('portal.read', { order: arrivingNext.erpRef, city: arrivingNext.shipToCity, time: formatTime(arrivingNext.eta!) }) : t('portal.readQuiet', { n: rows.length })) : null}
-        primaryTo={arrivingNext ? `/orders/${arrivingNext.id}` : null}
+        primaryTo={toSign.length ? `/orders/${toSign[0].id}?sign=1` : arrivingNext ? `/orders/${arrivingNext.id}` : null}
         secondaryTo="/track"
         metrics={[
           { label: t('portal.metric.open'), value: rows.length },
@@ -72,6 +74,24 @@ export function PortalRoute() {
             <h2 className="font-display text-lg font-semibold">{t('portal.orders')}</h2>
             <Button size="sm" onClick={() => setRaising(true)} data-raise-open data-variant="primary"><Plus className="size-3.5" aria-hidden />{t('portal.raise')}</Button>
           </div>
+          {toSign.length > 0 && (
+            <section data-card="to-sign" className="border-accent/40 bg-status-scheduled-bg rounded-lg border p-4">
+              <p className="eyebrow text-accent-text">{t('portal.toSignTitle')}</p>
+              <p className="mt-1 text-sm font-semibold">{toSign.length === 1 ? t('portal.toSign.one') : t('portal.toSign.many', { n: toSign.length })}</p>
+              <ul className="mt-3 flex flex-col gap-2">
+                {toSign.map((r) => (
+                  <li key={r.id} className="bg-surface border-border flex flex-wrap items-center gap-3 rounded-md border px-3 py-2.5" data-to-sign={r.id}>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-mono text-sm font-semibold">{r.erpRef}</span>
+                      <span className="text-muted-foreground block text-xs">{r.shipToName} · {r.tonnes} t {t(productKey(r.product))} · {r.carrierName}</span>
+                    </span>
+                    <StatusChip status={r.status} rejected={false} />
+                    <Button asChild size="sm" data-variant="primary"><Link to={`/orders/${r.id}?sign=1`} data-sign-link={r.id}>{t('order.action.sign')}</Link></Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {rows.length === 0 ? (
             <EmptyState title={t('portal.empty')} />
           ) : (

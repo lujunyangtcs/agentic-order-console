@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -36,6 +36,7 @@ interface Filters { carrier: string | null; status: OrderStatus | null; terminal
  */
 export function ReportsRoute() {
   const { t, lang } = useLang()
+  const narrow = useNarrow()
   const [filters, setFilters] = useState<Filters>({ carrier: null, status: null, terminal: null })
 
   const onTime = useQuery({ queryKey: ['report', 'carrier', 'on_time_pct'], queryFn: () => api.reports.build({ dimension: 'carrier', measure: 'on_time_pct', chart: 'bar' }) })
@@ -82,7 +83,7 @@ export function ReportsRoute() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={onTime.data.points} margin={{ top: 6, right: 8, bottom: 0, left: -16 }}>
                 <CartesianGrid {...GRID} vertical={false} />
-                <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: 'var(--border)' }} interval={0} angle={-22} height={54} textAnchor="end" />
+                <XAxis dataKey="label" tick={narrow ? false : AXIS} tickLine={false} axisLine={{ stroke: 'var(--border)' }} interval={0} angle={-22} height={narrow ? 8 : 54} textAnchor="end" />
                 <YAxis tick={AXIS} tickLine={false} axisLine={false} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
                 <Tooltip {...TIP} formatter={(v: number) => [`${Math.round(v)}%`, t('reports.measure.on_time_pct')]} />
                 <Bar dataKey="value" radius={[2, 2, 0, 0]} cursor="pointer" isAnimationActive={false} onClick={(e: { label?: string }) => e.label && toggle('carrier', e.label)}>
@@ -168,6 +169,18 @@ function Panel({ title, note, keyName, children }: { title: string; note: string
       <div className="h-60 px-3 py-3">{children}</div>
     </section>
   )
+}
+
+/** True below 640px, so charts can drop what will not fit. */
+function useNarrow(): boolean {
+  const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    const on = () => setNarrow(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [])
+  return narrow
 }
 
 function Skeleton() {

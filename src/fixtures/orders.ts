@@ -97,6 +97,7 @@ const OPEN: Seed[] = [
   // unloading (2)
   ['SO-1004', 'ST-04', 'GU', 38, 'standard', 'unloading', ago(560), ago(90), ahead(150), 'CAR-C', 1],
   ['SO-1005', 'ST-11', 'GU', 34, 'priority', 'unloading', ago(555), ago(80), ahead(160), 'CAR-A', 1],
+  ['SO-1060', 'ST-01', 'GUL', 36, 'standard', 'unload_completed', ago(600), ago(120), ahead(120), 'CAR-A', 1],
   // unload_completed (2)
   ['SO-1002', 'ST-05', 'GUL', 36, 'standard', 'unload_completed', ago(600), ago(120), ahead(120), 'CAR-G', 1],
   ['SO-1003', 'ST-08', 'GU', 38, 'standard', 'unload_completed', ago(610), ago(110), ahead(130), 'CAR-I', 1],
