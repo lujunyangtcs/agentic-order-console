@@ -28,6 +28,8 @@ export function ScorecardRoute() {
   const data = rows.data ?? []
   const total = KEYS.reduce((n, k) => n + weights[k], 0)
   const mine = session?.role === 'Carrier' ? session.carrierId : null
+  /* Carriers see the ranking and their own row; the weights belong to the desk. */
+  const canWeight = session?.role !== 'Carrier'
   const max = useMemo(() => ({ acceptance: Math.max(1, ...data.map((r) => r.acceptanceMinutes)), incidents: Math.max(0.01, ...data.map((r) => r.incidentRate)), rejections: Math.max(1, ...data.map((r) => r.rejections)) }), [data])
 
   const columns = useMemo<ColumnDef<ScorecardRow>[]>(() => [
@@ -51,7 +53,7 @@ export function ScorecardRoute() {
     <div className="mx-auto flex max-w-[1600px] flex-col gap-5 px-4 py-5 md:px-6 md:py-6">
       <PageHeader
         title={t('page.scorecard.title')}
-        description={t('page.scorecard.desc')}
+        description={canWeight ? t('page.scorecard.desc') : t('page.scorecard.descCarrier')}
         stats={[
           { label: t('scorecard.carriers'), value: data.length },
           { label: t('scorecard.leader'), value: data[0]?.carrierName ?? '—' },
@@ -59,6 +61,7 @@ export function ScorecardRoute() {
         ]}
       />
 
+      {canWeight ? (
       <section className="border-structural-border bg-surface rounded-lg border px-5 py-4" data-card="weights">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold">{t('scorecard.weights')}</h2>
@@ -76,6 +79,9 @@ export function ScorecardRoute() {
           ))}
         </div>
       </section>
+      ) : (
+        <p className="text-muted-foreground text-xs" data-weights-fixed>{t('scorecard.weightsFixed')}</p>
+      )}
 
       {rows.isLoading ? <LoadingRows rows={6} /> : (
         <DataTable name="scorecard" rows={data} columns={columns} rowKey={(r) => r.carrierId} maxHeight={480} empty={t('common.empty')} />
