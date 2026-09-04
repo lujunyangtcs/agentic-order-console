@@ -3,13 +3,21 @@ import type { ReactNode } from 'react'
 import { AppShell } from './shell/AppShell'
 import { HomeRedirect } from './shell/HomeRedirect'
 import { LoginRoute } from '@/routes/login/LoginRoute'
-import { PlaceholderRoute } from '@/routes/shared/PlaceholderRoute'
 import { HistoryRoute } from '@/routes/history/HistoryRoute'
 import { PortalRoute } from '@/routes/portal/PortalRoute'
 import { EpodRoute } from '@/routes/epod/EpodRoute'
 import { StakeholderRoute } from '@/routes/stakeholder/StakeholderRoute'
 import { YardRoute } from '@/routes/yard/YardRoute'
 import { DispatchRoute } from '@/routes/dispatch/DispatchRoute'
+import { ReportBuilderRoute } from '@/routes/reports/ReportBuilderRoute'
+import { ScorecardRoute } from '@/routes/reports/ScorecardRoute'
+import { BenchmarkRoute } from '@/routes/reports/BenchmarkRoute'
+import { TeamRoute } from '@/routes/reports/TeamRoute'
+import { EventsRoute } from '@/routes/events/EventsRoute'
+import { ExceptionsRoute } from '@/routes/exceptions/ExceptionsRoute'
+import { UsersRoute } from '@/routes/admin/UsersRoute'
+import { SecurityRoute } from '@/routes/admin/SecurityRoute'
+import { ArchitectureRoute } from '@/routes/admin/ArchitectureRoute'
 import { RouteGate } from '@/components/state/RouteGate'
 import { AuditRoute } from '@/routes/audit/AuditRoute'
 import { IntegrationsRoute } from '@/routes/admin/IntegrationsRoute'
@@ -22,7 +30,6 @@ import { TrackRoute } from '@/routes/track/TrackRoute'
 import { NotificationsRoute } from '@/routes/notifications/NotificationsRoute'
 import { RulesRoute } from '@/routes/admin/RulesRoute'
 import type { Role } from '@/types/domain'
-import type { I18nKey } from '@/i18n'
 
 /**
  * The route table.
@@ -47,9 +54,6 @@ const ADMIN: Role[] = ['Administrator']
 function gate(owners: Role[], node: ReactNode) {
   return <RouteGate owners={owners}>{node}</RouteGate>
 }
-function page(owners: Role[], titleKey: I18nKey, descKey?: I18nKey) {
-  return gate(owners, <PlaceholderRoute titleKey={titleKey} descKey={descKey} />)
-}
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginRoute /> },
@@ -63,14 +67,14 @@ export const router = createBrowserRouter([
       { path: 'worklist', element: gate(CVC, <WorklistRoute />) },
       { path: 'orders/:orderId', element: gate(ALL, <OrderRoute />) },
       { path: 'requests', element: gate(STAFF, <RequestsRoute />) },
-      { path: 'exceptions', element: page(CVC, 'page.exceptions.title', 'page.exceptions.desc') },
+      { path: 'exceptions', element: gate(CVC, <ExceptionsRoute />) },
       { path: 'track', element: gate(ALL, <TrackRoute />) },
 
       // ── reports ─────────────────────────────────────────────────────
-      { path: 'reports', element: page(STAFF, 'page.reports.title', 'page.reports.desc') },
-      { path: 'reports/scorecard', element: page([...STAFF, 'Carrier'], 'page.scorecard.title', 'page.scorecard.desc') },
-      { path: 'reports/benchmark', element: page(STAFF, 'page.benchmark.title', 'page.benchmark.desc') },
-      { path: 'reports/team', element: page(CVC, 'page.team.title', 'page.team.desc') },
+      { path: 'reports', element: gate(STAFF, <ReportBuilderRoute />) },
+      { path: 'reports/scorecard', element: gate([...STAFF, 'Carrier'], <ScorecardRoute />) },
+      { path: 'reports/benchmark', element: gate(STAFF, <BenchmarkRoute />) },
+      { path: 'reports/team', element: gate(CVC, <TeamRoute />) },
       { path: 'history', element: gate(ALL, <HistoryRoute />) },
 
       // ── carrier ─────────────────────────────────────────────────────
@@ -90,14 +94,14 @@ export const router = createBrowserRouter([
 
       // ── administration ──────────────────────────────────────────────
       { path: 'admin', element: <Navigate to="/admin/users" replace /> },
-      { path: 'admin/users', element: page(ADMIN, 'page.users.title', 'page.users.desc') },
+      { path: 'admin/users', element: gate(ADMIN, <UsersRoute />) },
       { path: 'admin/notification-rules', element: gate(ADMIN, <RulesRoute />) },
-      { path: 'admin/security', element: page(ADMIN, 'page.security.title', 'page.security.desc') },
+      { path: 'admin/security', element: gate(ADMIN, <SecurityRoute />) },
       { path: 'admin/integrations', element: gate(ADMIN, <IntegrationsRoute />) },
-      { path: 'admin/architecture', element: page(ADMIN, 'page.architecture.title', 'page.architecture.desc') },
+      { path: 'admin/architecture', element: gate(ADMIN, <ArchitectureRoute />) },
 
       // ── system ──────────────────────────────────────────────────────
-      { path: 'events', element: page(STAFF, 'page.events.title', 'page.events.desc') },
+      { path: 'events', element: gate(STAFF, <EventsRoute />) },
       { path: 'audit', element: gate(CVC, <AuditRoute />) },
 
       { path: '*', element: <HomeRedirect /> },

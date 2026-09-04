@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Bell, Check, Compass, LogOut, Menu, Search, User } from 'lucide-react'
+import { Bell, Check, Compass, LogOut, Menu, Search, Smartphone, User } from 'lucide-react'
+import { usePhone } from '../phone'
 import { Link, useNavigate } from 'react-router'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -117,6 +118,8 @@ export function Topbar() {
 
         <LangToggle />
 
+        <PhoneToggle />
+
         <Button asChild variant="ghost" size="icon" className="relative" aria-label={t('chrome.notifications')}>
           <Link to="/notifications" data-bell>
             <Bell className="size-4" aria-hidden />
@@ -216,5 +219,16 @@ export function Topbar() {
         </DropdownMenu>
       </div>
     </header>
+  )
+}
+
+/** Shows the same page in a phone beside the desktop view (desktop only). */
+function PhoneToggle() {
+  const { open, toggle } = usePhone()
+  const { t } = useLang()
+  return (
+    <Button variant={open ? 'secondary' : 'ghost'} size="icon" className="hidden xl:inline-flex" aria-pressed={open} aria-label={t('chrome.phone')} title={t('chrome.phone')} onClick={toggle} data-phone-toggle>
+      <Smartphone className="size-4" aria-hidden />
+    </Button>
   )
 }

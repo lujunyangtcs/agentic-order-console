@@ -9,6 +9,8 @@ import { MobileShell } from './MobileShell'
 import { DevPanel } from '../dev/DevPanel'
 import { TourProvider } from '../tour/TourProvider'
 import { TourOverlay } from '../tour/TourOverlay'
+import { PhoneProvider } from '../phone'
+import { PhoneDock } from '@/components/preview/PhoneDock'
 
 /**
  * The application frame.
@@ -29,21 +31,24 @@ export function AppShell() {
 
   return (
     <TourProvider>
-      <div className="bg-background flex min-h-full lg:h-full lg:overflow-hidden">
-        <Sidebar className="hidden lg:flex" />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar />
-          <LiveFeed />
-          <main className="relative min-h-0 flex-1 lg:overflow-auto">
-            <BackBar />
-            <div key={pathname} className="page-enter">
-              <Outlet />
-            </div>
-          </main>
+      <PhoneProvider>
+        <div className="bg-background flex min-h-full lg:h-full lg:overflow-hidden">
+          <Sidebar className="hidden lg:flex" />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Topbar />
+            <LiveFeed />
+            <main className="relative min-h-0 flex-1 lg:overflow-auto">
+              <BackBar />
+              <div key={pathname} className="page-enter">
+                <Outlet />
+              </div>
+            </main>
+          </div>
+          <PhoneDock />
+          <DevPanel />
+          <TourOverlay />
         </div>
-        <DevPanel />
-        <TourOverlay />
-      </div>
+      </PhoneProvider>
     </TourProvider>
   )
 }
