@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, ArrowRight, Check, ChevronDown, KeyRound, Lock, LogIn, ShieldCheck, User } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -28,7 +28,7 @@ const PANELS = [
  * security settings ask for. No credentials are typed by hand or stored.
  */
 export function LoginRoute() {
-  const { session, signIn } = useAuth()
+  const { session, signIn, signOut } = useAuth()
   const navigate = useNavigate()
   const { t, lang, setLang } = useLang()
   const security = useQuery({ queryKey: ['security'], queryFn: () => api.admin.security() })
@@ -52,7 +52,11 @@ export function LoginRoute() {
     return () => timers.current.forEach(clearTimeout)
   }, [stage])
 
-  if (session) return <Navigate to={homeFor(session.role, session.stakeholderKind)} replace />
+  /* /login is always the landing screen: a signed-in tab is signed out here. */
+  useEffect(() => {
+    if (session) signOut()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const typed = email === DEMO_IDENTITY.email
   const needsMfa = role === 'Customer' && (security.data?.mfaRequired ?? true)

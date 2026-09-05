@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router'
 import type { ReactNode } from 'react'
 import { AppShell } from './shell/AppShell'
 import { HomeRedirect } from './shell/HomeRedirect'
+import { EntryReset } from './shell/EntryReset'
 import { LoginRoute } from '@/routes/login/LoginRoute'
 import { HistoryRoute } from '@/routes/history/HistoryRoute'
 import { PortalRoute } from '@/routes/portal/PortalRoute'
@@ -61,7 +62,7 @@ export const router = createBrowserRouter([
     path: '/',
     element: <AppShell />,
     children: [
-      { index: true, element: <HomeRedirect /> },
+      { index: true, element: <EntryReset /> },
 
       // ── service desk ────────────────────────────────────────────────
       { path: 'worklist', element: gate(CVC, <WorklistRoute />) },
